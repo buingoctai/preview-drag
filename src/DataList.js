@@ -6,14 +6,16 @@ export default function DataList({ data }) {
   const [items, setItems] = useState(data);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="flex column">
       {items.map((item) => (
-        <div style={{ display: 'flex', background: 'lightgray', margin: 4 }}>
+        <div className="flex m-4" style={{ background: 'lightgray' }}>
           <img
             src={item.thumb}
-            style={{ width: IMG_SIZE, height: IMG_SIZE, margin: 4 }}
+            className="m-4"
+            alt={item.title}
+            style={{ width: IMG_SIZE, height: IMG_SIZE }}
           />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="flex column">
             <div>{item.title}</div>
             <div>{item.sub}</div>
           </div>

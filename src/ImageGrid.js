@@ -9,8 +9,9 @@ export default function ImageGrid({ images }) {
     <div>
       {imgs.map((img) => (
         <img
+          className="m-4"
           src={img.url}
-          style={{ width: IMG_SIZE, height: IMG_SIZE, margin: 4 }}
+          style={{ width: IMG_SIZE, height: IMG_SIZE }}
         />
       ))}
     </div>
