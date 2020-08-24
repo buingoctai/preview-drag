@@ -17,8 +17,8 @@ function App() {
   }
 
   return [
+    <ImageGrid images={EXAMPLE_IMAGES} onIndexUpdate={handleIndexUpdate} />,
     <DataList data={EXAMPLE_DATA} onIndexUpdate={handleIndexUpdate} />,
-    <ImageGrid images={EXAMPLE_IMAGES} onIndexUpdate={handleIndexUpdate} />
   ];
 }
 
