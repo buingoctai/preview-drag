@@ -16,10 +16,14 @@ function App() {
     console.log('handleIndexUpdate', oldIndex, newIndex);
   }
 
-  return [
-    <ImageGrid images={EXAMPLE_IMAGES} onIndexUpdate={handleIndexUpdate} />,
-    <DataList data={EXAMPLE_DATA} onIndexUpdate={handleIndexUpdate} />,
-  ];
+  return (
+    <div className="flex column align-center justify-center">
+      <div style={{ width: 800 }}>
+        <ImageGrid images={EXAMPLE_IMAGES} onIndexUpdate={handleIndexUpdate} />
+        <DataList data={EXAMPLE_DATA} onIndexUpdate={handleIndexUpdate} />
+      </div>
+    </div>
+  );
 }
 
 export default App;
