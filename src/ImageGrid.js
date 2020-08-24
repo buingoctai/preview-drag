@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 
-import EXAMPLE_IMAGES from './data';
-
 const IMG_SIZE = 80;
 
-export default function ImageGrid() {
-  const [imgs, setImgs] = useState(EXAMPLE_IMAGES);
+export default function ImageGrid({ images }) {
+  const [imgs, setImgs] = useState(images);
 
   return (
     <div>
