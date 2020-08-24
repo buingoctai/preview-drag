@@ -8,6 +8,6 @@ Viết component nhận vào prop `data` là array các item, cho phép drag và
 
 ## Checklist
 
-[ ] ImageGrid
-[ ] DataList
-[ ] Animation
+- [ ] ImageGrid
+- [ ] DataList
+- [ ] Animation
