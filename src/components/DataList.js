@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
+import React from "react";
+import enhance from "../enhance";
+
+import "./style.css";
 
 const IMG_SIZE = 40;
 
-export default function DataList({ data }) {
-  const [items, setItems] = useState(data);
-
+const DataList = ({ data }) => {
   return (
-    <div className="flex column">
-      {items.map((item) => (
-        <div className="flex m-4" style={{ background: 'lightgray' }}>
+    <div className="flex column list__data__container">
+      {data.map((item, index) => (
+        <div
+          id={index}
+          className="flex m-4"
+          style={{ background: "lightgray" }}
+          draggable="true"
+        >
           <img
-            src={item.thumb}
+            style={{ width: IMG_SIZE, height: IMG_SIZE }}
             className="m-4"
             alt={item.title}
-            style={{ width: IMG_SIZE, height: IMG_SIZE }}
+            src={item.thumb}
+            draggable="false"
           />
-          <div className="flex column">
+          <div className="flex column" draggable="false">
             <div>{item.title}</div>
             <div>{item.sub}</div>
           </div>
@@ -23,4 +30,6 @@ export default function DataList({ data }) {
       ))}
     </div>
   );
-}
+};
+
+export default enhance(DataList);

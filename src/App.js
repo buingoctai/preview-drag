@@ -1,19 +1,35 @@
 import React from "react";
-import enhance from "./enhance";
 
 import ImageGrid from "./components/ImageGrid";
 import DataList from "./components/DataList";
 
+import EXAMPLE_IMAGES from "./data";
+
+const EXAMPLE_DATA = EXAMPLE_IMAGES.slice(10).map((img, index) => ({
+  thumb: img.url,
+  title: `Title ${index}`,
+  sub: `Sub ${index}`,
+}));
+
 function App(props) {
-  const { images, exampleData } = props;
+  function handleIndexUpdate(oldIndex, newIndex) {
+    console.log("handleIndexUpdate", oldIndex, newIndex);
+  }
+
   return (
     <div className="flex column align-center justify-center">
       <div style={{ width: 800 }}>
-        <ImageGrid images={images} />
-        <DataList data={exampleData} />
+        <ImageGrid
+          dataList={EXAMPLE_IMAGES}
+          handleIndexUpdate={handleIndexUpdate}
+        />
+        <DataList
+          dataList={EXAMPLE_DATA}
+          handleIndexUpdate={handleIndexUpdate}
+        />
       </div>
     </div>
   );
 }
 
-export default enhance(App);
+export default App;

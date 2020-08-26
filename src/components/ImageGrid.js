@@ -1,21 +1,28 @@
 import React from "react";
+import enhance from "../enhance";
 import "./style.css";
 
 const IMG_SIZE = 80;
-
-export default function ImageGrid({ images }) {
+const ImageGrid = ({ data }) => {
   return (
     <div className="list__image__container">
-      {images.map((img, index) => (
+      {data.map((img, index) => (
         <img
           id={index}
-          style={{ width: IMG_SIZE, height: IMG_SIZE, margin: 4 }}
+          className="img__wrap"
+          style={{
+            width: IMG_SIZE,
+            height: IMG_SIZE,
+            margin: 4,
+          }}
           title={index}
           src={img.url}
-          alt="image"
+          alt="images"
           draggable="true"
         />
       ))}
     </div>
   );
-}
+};
+
+export default enhance(ImageGrid);

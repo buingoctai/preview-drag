@@ -1,0 +1,12 @@
+.list__image__container {
+  cursor: move;
+  margin-bottom: 50px;
+}
+
+.list__data__container {
+  cursor: move;
+}
+
+.img__wrap {
+  transition: all 2s ease-out;
+}
