@@ -20,10 +20,14 @@ function App(props) {
     <div className="flex column align-center justify-center">
       <div style={{ width: 800 }}>
         <ImageGrid
+          className="list__image__container"
+          subClassName="img__wrap"
           dataList={EXAMPLE_IMAGES}
           handleIndexUpdate={handleIndexUpdate}
         />
         <DataList
+          className="list__data__container"
+          subClassName="item__wrap"
           dataList={EXAMPLE_DATA}
           handleIndexUpdate={handleIndexUpdate}
         />

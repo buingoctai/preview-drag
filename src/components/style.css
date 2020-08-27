@@ -1,12 +1,23 @@
 .list__image__container {
-  cursor: move;
+  /* cursor: move; */
   margin-bottom: 50px;
 }
 
 .list__data__container {
-  cursor: move;
+  /* cursor: move; */
 }
 
 .img__wrap {
-  transition: all 2s ease-out;
+  transition: all 0.2s ease-out;
+}
+.img__wrap:hover {
+  cursor: move;
+}
+
+.item__wrap {
+  transition: all 0.2s ease-out;
+}
+
+.item__wrap:hover {
+  cursor: move;
 }

@@ -3,7 +3,8 @@ import enhance from "../enhance";
 import "./style.css";
 
 const IMG_SIZE = 80;
-const ImageGrid = ({ data }) => {
+const ImageGrid = ({ data, onClickItem }) => {
+  console.log("xxx ImageGrid", data);
   return (
     <div className="list__image__container">
       {data.map((img, index) => (
@@ -19,6 +20,7 @@ const ImageGrid = ({ data }) => {
           src={img.url}
           alt="images"
           draggable="true"
+          onClick={() => onClickItem()}
         />
       ))}
     </div>

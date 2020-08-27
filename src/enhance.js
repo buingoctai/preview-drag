@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
+const enhance = (App) => ({
+  dataList,
+  className,
+  subClassName,
+  handleIndexUpdate,
+}) => {
+  console.log("dataList=", dataList);
   const [data, setData] = useState(dataList);
   const srcIndex = useRef("");
   const isReverting = useRef(true);
@@ -25,8 +31,7 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
   };
 
   useEffect(() => {
-    const newDataArr = [...data];
-    const setNewDataArr = setData;
+    console.log("useffect");
 
     const handleDragStart = (event) => {
       event.stopImmediatePropagation();
@@ -40,6 +45,8 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
       setSrcIndex(srcIndex);
       event.dataTransfer.dropEffect = "move";
       event.dataTransfer.setData("startIndex", srcIndex);
+      event.target.style.cursor = "move";
+      // document.getElementsByClassName(className)[0].style.cursor = "move"; // fix pointer type
     };
 
     const handleDragEnd = (event) => {
@@ -48,13 +55,16 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
 
       if (isReverting.current) {
         const arrangedDataList = onRearrangeDataList({
-          dataArr: newDataArr,
+          // fix common logic
+          dataArr: data,
           srcIndex: srcIndex.current,
           targetIndex: element.id,
         });
-        setNewDataArr(arrangedDataList);
+        // fix common logic
+        setData(() => [...arrangedDataList]);
         // onAddAnimation(srcIndex.current, element.id); // add animation
       }
+      // document.getElementsByClassName(className)[0].style.cursor = "defautl"; // fix pointer type
       element.style.opacity = "1";
     };
 
@@ -66,9 +76,9 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
     };
 
     const handleDragEnter = (event) => {
+      onClickItem();
       const { currentTarget: element } = event;
       const { id: targetIndex } = element;
-
       // fix fire dragenter many time
       if (!finishCheck.current) {
         if (targetIndex === enterIndex.current) {
@@ -77,15 +87,21 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
           return;
         }
       }
+
+      console.log("handleDragEnter=", data);
+
       if (targetIndex === srcIndex.current) return;
 
       const arrangedDataList = onRearrangeDataList({
-        dataArr: newDataArr,
+        // fix common logic
+        dataArr: data,
         srcIndex: srcIndex.current,
         targetIndex,
       });
-      setNewDataArr(arrangedDataList);
-      // onAddAnimation(srcIndex.current, targetIndex); // add animiation
+
+      // fix common logic
+      setData(() => [...arrangedDataList]);
+      //  onAddAnimation(srcIndex.current, targetIndex); // add animation
       setSrcIndex(targetIndex);
       element.style.opacity = "0.4";
     };
@@ -108,7 +124,7 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
     };
 
     // Add event listeners
-    const imgEls = document.querySelectorAll(".list__image__container > img");
+    const imgEls = document.querySelectorAll(`.${className} .${subClassName}`);
     imgEls.forEach(function (e) {
       e.addEventListener("dragstart", handleDragStart, false);
       e.addEventListener("dragend", handleDragEnd, false);
@@ -117,17 +133,7 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
       e.addEventListener("dragover", handleDragOver, false);
       e.addEventListener("drop", handleDrop, false);
     });
-
-    const dataEls = document.querySelectorAll(".list__data__container > div");
-    dataEls.forEach(function (e) {
-      e.addEventListener("dragstart", handleDragStart, false);
-      e.addEventListener("dragend", handleDragEnd, false);
-      e.addEventListener("dragenter", handleDragEnter, false);
-      e.addEventListener("dragleave", handleDragLeave, false);
-      e.addEventListener("dragover", handleDragOver, false);
-      e.addEventListener("drop", handleDrop, false);
-    });
-  }, [data]);
+  }, []);
 
   const onRearrangeDataList = ({ dataArr, srcIndex, targetIndex }) => {
     if (!srcIndex || !targetIndex) return [...dataArr];
@@ -140,36 +146,43 @@ const enhance = (App) => ({ dataList, handleIndexUpdate }) => {
 
   const onAddAnimation = (start, end) => {
     console.log("onAddAnimation", start, end);
+
     if (start < end) {
       setTimeout(() => {
         for (let i = parseInt(start); i < parseInt(end); i++) {
           document.getElementById(i.toString()).style.transform =
-            "translate3d(-0.5rem, 0, 6rem)";
+            "translate3d(-10%, 0, 0)";
+          // "translate3d(0, -10%, 0px)";
         }
-      }, 500);
+      });
 
       setTimeout(() => {
         for (let i = parseInt(start); i < parseInt(end); i++) {
           document.getElementById(i.toString()).style.transform = "none";
         }
-      }, 1000);
+      }, 500);
     } else {
       setTimeout(() => {
-        for (let i = parseInt(end); i > parseInt(start); i--) {
+        for (let i = parseInt(start); i > parseInt(end); i--) {
           document.getElementById(i.toString()).style.transform =
-            "translate3d(-0.5rem, 0, 6rem)";
+            "translate3d(10%, 0, 0)";
+          // "translate3d(0, 10%, 0px)";
         }
-      }, 500);
+      });
 
       setTimeout(() => {
-        for (let i = parseInt(end); i > parseInt(start); i--) {
+        for (let i = parseInt(start); i > parseInt(end); i--) {
           document.getElementById(i.toString()).style.transform = "none";
         }
-      }, 1000);
+      }, 500);
     }
   };
 
-  return <App data={data} />;
+  const onClickItem = () => {
+    console.log("onClickItem", data);
+  };
+
+  return <App data={data} onClickItem={onClickItem} />;
 };
 
 export default enhance;
