@@ -6,12 +6,12 @@ const enhance = (App) => ({
   subClassName,
   handleIndexUpdate,
 }) => {
-  console.log("dataList=", dataList);
   const [data, setData] = useState(dataList);
   const srcIndex = useRef("");
   const isReverting = useRef(true);
-  const enterIndex = useRef(""); // fix fire dragenter many time
-  const finishCheck = useRef(null); // fix fire dragenter many time
+  const enterIndex = useRef(""); // Fix fire dragenter many time
+  const finishCheck = useRef(null); // Fix fire dragenter many time
+  const orderList = useRef(Array.from(Array(dataList.length).keys()));
 
   const setSrcIndex = (val) => {
     srcIndex.current = val;
@@ -30,9 +30,11 @@ const enhance = (App) => ({
     finishCheck.current = val;
   };
 
-  useEffect(() => {
-    console.log("useffect");
+  const setOrderList = (val) => {
+    orderList.current = val;
+  };
 
+  useEffect(() => {
     const handleDragStart = (event) => {
       event.stopImmediatePropagation();
       const {
@@ -43,28 +45,46 @@ const enhance = (App) => ({
       setFinishCheck(false); // fix fire dragenter many time
       setIsReverting(true);
       setSrcIndex(srcIndex);
+      setOrderList(Array.from(Array(dataList.length).keys()));
+      onAddTransition();
       event.dataTransfer.dropEffect = "move";
-      event.dataTransfer.setData("startIndex", srcIndex);
+      event.dataTransfer.setData(
+        "startIndex",
+        orderList.current.indexOf(parseInt(srcIndex))
+      );
       event.target.style.cursor = "move";
-      // document.getElementsByClassName(className)[0].style.cursor = "move"; // fix pointer type
+
+      console.log("handleDragStart", event.target);
+      event.target.style.opacity = "0.1";
     };
 
     const handleDragEnd = (event) => {
       event.stopImmediatePropagation();
-      const { target: element } = event;
 
+      const { target: element } = event;
       if (isReverting.current) {
-        const arrangedDataList = onRearrangeDataList({
-          // fix common logic
-          dataArr: data,
-          srcIndex: srcIndex.current,
-          targetIndex: element.id,
-        });
-        // fix common logic
-        setData(() => [...arrangedDataList]);
-        // onAddAnimation(srcIndex.current, element.id); // add animation
+        onRevertDataList();
+      } else {
+        let updatedData = [...data];
+        let updatedIndex = [];
+
+        for (let i = 0; i < orderList.current.length; i++) {
+          if (updatedIndex.includes(orderList.current[i])) {
+            continue;
+          } else {
+            updatedIndex.push(orderList.current.indexOf(orderList.current[i]));
+          }
+          updatedData = onRearrangeDataList({
+            dataArr: [...updatedData],
+            srcIndex: orderList.current[i],
+            targetIndex: orderList.current.indexOf(orderList.current[i]),
+          });
+        }
+
+        onRemoveTransition();
+        onRevertDataList();
+        setData(updatedData);
       }
-      // document.getElementsByClassName(className)[0].style.cursor = "defautl"; // fix pointer type
       element.style.opacity = "1";
     };
 
@@ -76,10 +96,10 @@ const enhance = (App) => ({
     };
 
     const handleDragEnter = (event) => {
-      onClickItem();
       const { currentTarget: element } = event;
       const { id: targetIndex } = element;
-      // fix fire dragenter many time
+
+      // Fix fire dragenter many time
       if (!finishCheck.current) {
         if (targetIndex === enterIndex.current) {
           setFinishCheck(true);
@@ -87,23 +107,16 @@ const enhance = (App) => ({
           return;
         }
       }
-
-      console.log("handleDragEnter=", data);
-
       if (targetIndex === srcIndex.current) return;
 
-      const arrangedDataList = onRearrangeDataList({
-        // fix common logic
-        dataArr: data,
-        srcIndex: srcIndex.current,
-        targetIndex,
+      // Add animation & update order list
+      onAddAnimation(parseInt(srcIndex.current), parseInt(targetIndex));
+      const arrangedOrderList = onRearrangeDataList({
+        dataArr: [...orderList.current],
+        srcIndex: orderList.current.indexOf(parseInt(srcIndex.current)),
+        targetIndex: orderList.current.indexOf(parseInt(targetIndex)),
       });
-
-      // fix common logic
-      setData(() => [...arrangedDataList]);
-      //  onAddAnimation(srcIndex.current, targetIndex); // add animation
-      setSrcIndex(targetIndex);
-      element.style.opacity = "0.4";
+      setOrderList(arrangedOrderList);
     };
 
     const handleDragLeave = ({ target: element }) => {
@@ -111,15 +124,18 @@ const enhance = (App) => ({
     };
 
     const handleDrop = (event) => {
-      handleDragLeave(event);
       event.stopImmediatePropagation();
+      handleDragLeave(event);
 
       const oldIndex = event.dataTransfer.getData("startIndex");
       const {
         target: { id: newIndex },
       } = event;
 
-      handleIndexUpdate(oldIndex, newIndex);
+      handleIndexUpdate(
+        oldIndex,
+        orderList.current.indexOf(parseInt(newIndex))
+      );
       setIsReverting(false);
     };
 
@@ -133,11 +149,24 @@ const enhance = (App) => ({
       e.addEventListener("dragover", handleDragOver, false);
       e.addEventListener("drop", handleDrop, false);
     });
-  }, []);
+
+    return () => {
+      // Remove event listeners
+      const imgEls = document.querySelectorAll(
+        `.${className} .${subClassName}`
+      );
+      imgEls.forEach(function (e) {
+        e.removeEventListener("dragstart", handleDragStart, false);
+        e.removeEventListener("dragend", handleDragEnd, false);
+        e.removeEventListener("dragenter", handleDragEnter, false);
+        e.removeEventListener("dragleave", handleDragLeave, false);
+        e.removeEventListener("dragover", handleDragOver, false);
+        e.removeEventListener("drop", handleDrop, false);
+      });
+    };
+  }, [data]);
 
   const onRearrangeDataList = ({ dataArr, srcIndex, targetIndex }) => {
-    if (!srcIndex || !targetIndex) return [...dataArr];
-
     const srcItem = dataArr[srcIndex];
     dataArr.splice(srcIndex, 1);
     dataArr.splice(targetIndex, 0, srcItem);
@@ -145,44 +174,93 @@ const enhance = (App) => ({
   };
 
   const onAddAnimation = (start, end) => {
-    console.log("onAddAnimation", start, end);
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
 
-    if (start < end) {
-      setTimeout(() => {
-        for (let i = parseInt(start); i < parseInt(end); i++) {
-          document.getElementById(i.toString()).style.transform =
-            "translate3d(-10%, 0, 0)";
-          // "translate3d(0, -10%, 0px)";
-        }
-      });
+    if (orderList.current.indexOf(start) < orderList.current.indexOf(end)) {
+      // Move else points
+      const addDistance =
+        (orderList.current.indexOf(end) - orderList.current.indexOf(start)) *
+        56;
 
-      setTimeout(() => {
-        for (let i = parseInt(start); i < parseInt(end); i++) {
-          document.getElementById(i.toString()).style.transform = "none";
-        }
-      }, 500);
+      const strOldTranslate = elms[start].style.transform;
+      const numOldTranslate = parseInt(
+        strOldTranslate.slice(11, strOldTranslate.length - 3)
+      );
+
+      elms[start].style.transform = `translateY(${
+        numOldTranslate + addDistance
+      }px)`;
+
+      // Move start point
+      for (
+        let i = orderList.current.indexOf(start) + 1;
+        i <= orderList.current.indexOf(end);
+        i++
+      ) {
+        const strTranslate = elms[orderList.current[i]].style.transform;
+        const numTranslate = parseInt(
+          strTranslate.slice(11, strTranslate.length - 3)
+        );
+
+        elms[orderList.current[i]].style.transform = `translateY(${
+          numTranslate - 56
+        }px)`;
+      }
     } else {
-      setTimeout(() => {
-        for (let i = parseInt(start); i > parseInt(end); i--) {
-          document.getElementById(i.toString()).style.transform =
-            "translate3d(10%, 0, 0)";
-          // "translate3d(0, 10%, 0px)";
-        }
-      });
+      // Move start point
+      const subDistance =
+        (orderList.current.indexOf(start) - orderList.current.indexOf(end)) *
+        -56;
 
-      setTimeout(() => {
-        for (let i = parseInt(start); i > parseInt(end); i--) {
-          document.getElementById(i.toString()).style.transform = "none";
-        }
-      }, 500);
+      const strOldTranslate = elms[start].style.transform;
+      const numOldTranslate = parseInt(
+        strOldTranslate.slice(11, strOldTranslate.length - 3)
+      );
+
+      elms[start].style.transform = `translateY(${
+        numOldTranslate + subDistance
+      }px)`;
+
+      // Move else points
+      for (
+        let i = orderList.current.indexOf(start) - 1;
+        i >= orderList.current.indexOf(end);
+        i--
+      ) {
+        const strOldTranslate = elms[orderList.current[i]].style.transform;
+        const numOldTranslate = parseInt(
+          strOldTranslate.slice(11, strOldTranslate.length - 3)
+        );
+
+        elms[orderList.current[i]].style.transform = `translateY(${
+          numOldTranslate + 56
+        }px)`;
+      }
     }
   };
 
-  const onClickItem = () => {
-    console.log("onClickItem", data);
+  const onRevertDataList = () => {
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    for (let i = 0; i < elms.length; i++) {
+      elms[i].style.transform = "translateY(0px)";
+    }
   };
 
-  return <App data={data} onClickItem={onClickItem} />;
+  const onRemoveTransition = () => {
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    for (let i = 0; i < elms.length; i++) {
+      elms[i].style.transition = "all 0s ease-out";
+    }
+  };
+
+  const onAddTransition = () => {
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    for (let i = 0; i < elms.length; i++) {
+      elms[i].style.transition = "all 0.4s ease-out";
+    }
+  };
+
+  return <App data={data} />;
 };
 
 export default enhance;

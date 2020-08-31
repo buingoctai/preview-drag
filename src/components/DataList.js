@@ -5,7 +5,7 @@ import "./style.css";
 
 const IMG_SIZE = 40;
 
-const DataList = ({ data, onClickItem }) => {
+const DataList = ({ data }) => {
   console.log("xxx DataList", data);
   return (
     <div className="flex column list__data__container">
@@ -13,20 +13,23 @@ const DataList = ({ data, onClickItem }) => {
         <div
           id={index}
           className="flex m-4 item__wrap"
-          style={{ background: "lightgray" }}
+          style={{ background: "lightgray", transform: "translateY(0)" }}
           draggable="true"
-          onClick={() => onClickItem()}
         >
           <img
-            style={{ width: IMG_SIZE, height: IMG_SIZE }}
+            style={{ width: IMG_SIZE, height: IMG_SIZE, pointerEvents: "none" }}
             className="m-4"
             alt={item.title}
             src={item.thumb}
             draggable="false"
           />
-          <div className="flex column" draggable="false">
-            <div>{item.title}</div>
-            <div>{item.sub}</div>
+          <div
+            className="flex column"
+            draggable="false"
+            style={{ pointerEvents: "none" }}
+          >
+            <div style={{ pointerEvents: "none" }}>{item.title}</div>
+            <div style={{ pointerEvents: "none" }}>{item.sub}</div>
           </div>
         </div>
       ))}
