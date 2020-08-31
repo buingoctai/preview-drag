@@ -3,21 +3,26 @@ import enhance from "../enhance";
 
 import "./style.css";
 
-const IMG_SIZE = 40;
-
-const DataList = ({ data }) => {
-  console.log("xxx DataList", data);
+const DataList = ({ imageSize, margin, data }) => {
   return (
     <div className="flex column list__data__container">
       {data.map((item, index) => (
         <div
           id={index}
-          className="flex m-4 item__wrap"
-          style={{ background: "lightgray", transform: "translateY(0)" }}
+          className="flex  item__wrap"
+          style={{
+            background: "lightgray",
+            transform: "translate3d(0px,0px,0px)",
+            margin: margin,
+          }}
           draggable="true"
         >
           <img
-            style={{ width: IMG_SIZE, height: IMG_SIZE, pointerEvents: "none" }}
+            style={{
+              width: imageSize,
+              height: imageSize,
+              pointerEvents: "none",
+            }}
             className="m-4"
             alt={item.title}
             src={item.thumb}

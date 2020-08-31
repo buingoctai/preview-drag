@@ -4,6 +4,10 @@ const enhance = (App) => ({
   dataList,
   className,
   subClassName,
+  displayStyle,
+  imageSize,
+  rowWidth,
+  margin,
   handleIndexUpdate,
 }) => {
   const [data, setData] = useState(dataList);
@@ -46,16 +50,14 @@ const enhance = (App) => ({
       setIsReverting(true);
       setSrcIndex(srcIndex);
       setOrderList(Array.from(Array(dataList.length).keys()));
-      onAddTransition();
+      onAddingTransition();
       event.dataTransfer.dropEffect = "move";
       event.dataTransfer.setData(
         "startIndex",
         orderList.current.indexOf(parseInt(srcIndex))
       );
       event.target.style.cursor = "move";
-
-      console.log("handleDragStart", event.target);
-      event.target.style.opacity = "0.1";
+      event.target.style.opacity = "0.4";
     };
 
     const handleDragEnd = (event) => {
@@ -63,7 +65,7 @@ const enhance = (App) => ({
 
       const { target: element } = event;
       if (isReverting.current) {
-        onRevertDataList();
+        onRevertingDataList();
       } else {
         let updatedData = [...data];
         let updatedIndex = [];
@@ -81,8 +83,8 @@ const enhance = (App) => ({
           });
         }
 
-        onRemoveTransition();
-        onRevertDataList();
+        onRemovingTransition();
+        onRevertingDataList();
         setData(updatedData);
       }
       element.style.opacity = "1";
@@ -109,8 +111,11 @@ const enhance = (App) => ({
       }
       if (targetIndex === srcIndex.current) return;
 
-      // Add animation & update order list
-      onAddAnimation(parseInt(srcIndex.current), parseInt(targetIndex));
+      onChoosingAnimationStyle({
+        start: parseInt(srcIndex.current),
+        end: parseInt(targetIndex),
+        displayStyle: displayStyle,
+      });
       const arrangedOrderList = onRearrangeDataList({
         dataArr: [...orderList.current],
         srcIndex: orderList.current.indexOf(parseInt(srcIndex.current)),
@@ -173,94 +178,232 @@ const enhance = (App) => ({
     return [...dataArr];
   };
 
-  const onAddAnimation = (start, end) => {
+  const onChoosingAnimationStyle = ({ start, end, displayStyle }) => {
     const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    const startIndex = orderList.current.indexOf(start);
+    const endIndex = orderList.current.indexOf(end);
 
-    if (orderList.current.indexOf(start) < orderList.current.indexOf(end)) {
-      // Move else points
-      const addDistance =
-        (orderList.current.indexOf(end) - orderList.current.indexOf(start)) *
-        56;
+    switch (displayStyle) {
+      case "list":
+        handleAddingListAnimation({
+          startIndex,
+          endIndex,
+          elms,
+          widthUnit: 56,
+        });
+        break;
+      case "grid":
+        handleAddingGridAnimation({
+          startIndex,
+          endIndex,
+          elms,
+          widthUnit: 88,
+          numItemRow: 9,
+        });
+        break;
+      default:
+        break;
+    }
+  };
+  const handleAddingListAnimation = ({
+    startIndex,
+    endIndex,
+    elms,
+    widthUnit,
+  }) => {
+    //  Move start point
+    let deltaX = 0;
+    let deltaY = 0;
 
-      const strOldTranslate = elms[start].style.transform;
-      const numOldTranslate = parseInt(
-        strOldTranslate.slice(11, strOldTranslate.length - 3)
-      );
+    deltaX = 0;
+    deltaY = (endIndex - startIndex) * widthUnit;
+    const elmIndex = orderList.current[startIndex];
 
-      elms[start].style.transform = `translateY(${
-        numOldTranslate + addDistance
-      }px)`;
+    const { x, y, z } = getMatrix(elms[elmIndex]);
+    elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
+      y + deltaY
+    }px,${z}px)`;
 
-      // Move start point
-      for (
-        let i = orderList.current.indexOf(start) + 1;
-        i <= orderList.current.indexOf(end);
-        i++
-      ) {
-        const strTranslate = elms[orderList.current[i]].style.transform;
-        const numTranslate = parseInt(
-          strTranslate.slice(11, strTranslate.length - 3)
-        );
+    // Move else points
+    deltaX = 0;
+    deltaY = startIndex < endIndex ? -widthUnit : widthUnit;
+    if (startIndex < endIndex) {
+      for (let i = startIndex + 1; i <= endIndex; i++) {
+        const elmIndex = orderList.current[i];
+        const { x, y, z } = getMatrix(elms[elmIndex]);
 
-        elms[orderList.current[i]].style.transform = `translateY(${
-          numTranslate - 56
-        }px)`;
+        elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
+          y + deltaY
+        }px,${z}px)`;
+      }
+      return;
+    }
+    for (let i = startIndex - 1; i >= endIndex; i--) {
+      const elmIndex = orderList.current[i];
+      const { x, y, z } = getMatrix(elms[elmIndex]);
+
+      elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
+        y + deltaY
+      }px,${z}px)`;
+    }
+  };
+  const handleAddingGridAnimation = ({
+    startIndex,
+    endIndex,
+    elms,
+    widthUnit,
+    numItemRow,
+  }) => {
+    const crossMovingIdxs = detectCrossMovingIdxs(startIndex, endIndex);
+    const numRowDiff = detectNumDiffRow(startIndex, endIndex);
+    const isSameRow = numRowDiff === 0 ? true : false;
+    // Moving start point
+    let deltaX = 0;
+    let deltaY = 0;
+
+    if (isSameRow) {
+      deltaX = (endIndex - startIndex) * widthUnit;
+    } else {
+      if (startIndex < endIndex) {
+        deltaX =
+          (endIndex - (startIndex + numRowDiff * numItemRow)) * widthUnit;
+        deltaY = numRowDiff * widthUnit;
+      } else {
+        deltaX =
+          (endIndex - (startIndex - numRowDiff * numItemRow)) * widthUnit;
+        deltaY = numRowDiff * -widthUnit;
+      }
+    }
+
+    const elmIndex = orderList.current[startIndex];
+    const { x, y, z } = getMatrix(elms[elmIndex]);
+    elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
+      y + deltaY
+    }px,${z}px)`;
+
+    // Moving else points
+    deltaX = startIndex < endIndex ? -widthUnit : widthUnit;
+    deltaY = 0;
+
+    if (startIndex < endIndex) {
+      for (let i = startIndex + 1; i <= endIndex; i++) {
+        if (crossMovingIdxs.includes(i)) {
+          deltaX = (numItemRow - 1) * widthUnit;
+          deltaY = -widthUnit;
+        } else {
+          deltaX = startIndex < endIndex ? -widthUnit : widthUnit;
+          deltaY = 0;
+        }
+        const elmIndex = orderList.current[i];
+        const { x, y, z } = getMatrix(elms[elmIndex]);
+
+        elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
+          y + deltaY
+        }px,${z}px)`;
       }
     } else {
-      // Move start point
-      const subDistance =
-        (orderList.current.indexOf(start) - orderList.current.indexOf(end)) *
-        -56;
+      for (let i = startIndex - 1; i >= endIndex; i--) {
+        if (crossMovingIdxs.includes(i)) {
+          deltaX = (numItemRow - 1) * -widthUnit;
+          deltaY = widthUnit;
+        } else {
+          deltaX = startIndex < endIndex ? -widthUnit : widthUnit;
+          deltaY = 0;
+        }
 
-      const strOldTranslate = elms[start].style.transform;
-      const numOldTranslate = parseInt(
-        strOldTranslate.slice(11, strOldTranslate.length - 3)
-      );
+        const elmIndex = orderList.current[i];
+        const { x, y, z } = getMatrix(elms[elmIndex]);
 
-      elms[start].style.transform = `translateY(${
-        numOldTranslate + subDistance
-      }px)`;
-
-      // Move else points
-      for (
-        let i = orderList.current.indexOf(start) - 1;
-        i >= orderList.current.indexOf(end);
-        i--
-      ) {
-        const strOldTranslate = elms[orderList.current[i]].style.transform;
-        const numOldTranslate = parseInt(
-          strOldTranslate.slice(11, strOldTranslate.length - 3)
-        );
-
-        elms[orderList.current[i]].style.transform = `translateY(${
-          numOldTranslate + 56
-        }px)`;
+        elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
+          y + deltaY
+        }px,${z}px)`;
       }
     }
   };
-
-  const onRevertDataList = () => {
+  const onRevertingDataList = () => {
     const elms = document.querySelectorAll(`.${className} .${subClassName}`);
     for (let i = 0; i < elms.length; i++) {
-      elms[i].style.transform = "translateY(0px)";
+      elms[i].style.transform = "translate3d(0px,0px,0px)";
     }
   };
 
-  const onRemoveTransition = () => {
+  const onRemovingTransition = () => {
     const elms = document.querySelectorAll(`.${className} .${subClassName}`);
     for (let i = 0; i < elms.length; i++) {
       elms[i].style.transition = "all 0s ease-out";
     }
   };
 
-  const onAddTransition = () => {
+  const onAddingTransition = () => {
     const elms = document.querySelectorAll(`.${className} .${subClassName}`);
     for (let i = 0; i < elms.length; i++) {
       elms[i].style.transition = "all 0.4s ease-out";
     }
   };
 
-  return <App data={data} />;
+  // Only for image grid
+  const detectCrossMovingPoints = () => {
+    const ROW_WIDTH = 800;
+    const ELEMENT_WDITH = 88;
+    const rowNumberEle = Math.floor(ROW_WIDTH / ELEMENT_WDITH);
+
+    let startPoints = [];
+    let endPoints = [];
+    for (
+      let i = rowNumberEle;
+      i < orderList.current.length;
+      i += rowNumberEle
+    ) {
+      startPoints.push(i);
+      endPoints.push(i - 1);
+    }
+    startPoints.unshift(0);
+    endPoints.push(orderList.current.length - 1);
+
+    return { startPoints, endPoints };
+  };
+
+  const detectCrossMovingIdxs = (start, end) => {
+    const { startPoints, endPoints } = detectCrossMovingPoints();
+
+    const crossMovingIdxs =
+      start < end
+        ? startPoints.filter((item) => item >= start && item <= end)
+        : endPoints.filter((item) => item >= end && item <= start);
+
+    return crossMovingIdxs;
+  };
+
+  const detectNumDiffRow = (start, end) => {
+    const { startPoints, endPoints } = detectCrossMovingPoints();
+    let belongStartIdx;
+    let belongEndIdx;
+
+    for (let i = 0; i < startPoints.length; i++) {
+      if (startPoints[i] <= start && start <= endPoints[i]) {
+        belongStartIdx = i;
+      }
+      if (startPoints[i] <= end && end <= endPoints[i]) {
+        belongEndIdx = i;
+      }
+    }
+
+    return Math.abs(belongEndIdx - belongStartIdx);
+  };
+
+  const getMatrix = (element) => {
+    const values = element.style.transform.split(/\w+\(|\);?/);
+    const transform = values[1]
+      .split(/,\s?/g)
+      .map((numStr) => parseInt(numStr));
+
+    return {
+      x: transform[0],
+      y: transform[1],
+      z: transform[2],
+    };
+  };
+  return <App data={data} imageSize={imageSize} margin={margin} />;
 };
 
 export default enhance;

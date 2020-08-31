@@ -2,9 +2,7 @@ import React from "react";
 import enhance from "../enhance";
 import "./style.css";
 
-const IMG_SIZE = 80;
-const ImageGrid = ({ data, onClickItem }) => {
-  console.log("xxx ImageGrid", data);
+const ImageGrid = ({ imageSize, margin, data }) => {
   return (
     <div className="list__image__container">
       {data.map((img, index) => (
@@ -12,15 +10,19 @@ const ImageGrid = ({ data, onClickItem }) => {
           id={index}
           className="img__wrap"
           style={{
-            width: IMG_SIZE,
-            height: IMG_SIZE,
-            margin: 4,
+            width: imageSize,
+            height: imageSize,
+            margin: margin,
+            transform: "translate3d(0px,0px,0px)",
+            // remove whitespace in break inline
+            display: "block",
+            float: "left",
+            border: 0,
           }}
           title={index}
           src={img.url}
           alt="images"
           draggable="true"
-          onClick={() => onClickItem()}
         />
       ))}
     </div>

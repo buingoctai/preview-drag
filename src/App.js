@@ -16,19 +16,30 @@ function App(props) {
     console.log("handleIndexUpdate", oldIndex, newIndex);
   }
 
+  const ROW_WIDTH = 800;
+  const MARGIN = 4;
   return (
     <div className="flex column align-center justify-center">
-      <div style={{ width: 800 }}>
-        {/* <ImageGrid
+      <div
+        style={{ width: ROW_WIDTH, display: "flex", flexDirection: "column" }}
+      >
+        <ImageGrid
+          displayStyle="grid"
           className="list__image__container"
           subClassName="img__wrap"
           dataList={EXAMPLE_IMAGES}
+          rowWidth={ROW_WIDTH}
+          margin={MARGIN}
+          imageSize={80}
           handleIndexUpdate={handleIndexUpdate}
-        /> */}
+        />
         <DataList
+          displayStyle="list"
           className="list__data__container"
           subClassName="item__wrap"
           dataList={EXAMPLE_DATA}
+          margin={MARGIN}
+          imageSize={40}
           handleIndexUpdate={handleIndexUpdate}
         />
       </div>
