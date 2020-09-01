@@ -26,13 +26,9 @@ const DataList = ({ imageSize, margin, data }) => {
             className="m-4"
             alt={item.title}
             src={item.thumb}
-            draggable="false"
           />
-          <div
-            className="flex column"
-            draggable="false"
-            style={{ pointerEvents: "none" }}
-          >
+
+          <div className="flex column" style={{ pointerEvents: "none" }}>
             <div style={{ pointerEvents: "none" }}>{item.title}</div>
             <div style={{ pointerEvents: "none" }}>{item.sub}</div>
           </div>

@@ -6,8 +6,8 @@ const enhance = (App) => ({
   subClassName,
   displayStyle,
   imageSize,
-  rowWidth,
   margin,
+  numItemRow = 1,
   handleIndexUpdate,
 }) => {
   const [data, setData] = useState(dataList);
@@ -16,6 +16,7 @@ const enhance = (App) => ({
   const enterIndex = useRef(""); // Fix fire dragenter many time
   const finishCheck = useRef(null); // Fix fire dragenter many time
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
+  // const edgePointRow=useRef(detectCrossMovingPoints());
 
   const setSrcIndex = (val) => {
     srcIndex.current = val;
@@ -56,14 +57,12 @@ const enhance = (App) => ({
         "startIndex",
         orderList.current.indexOf(parseInt(srcIndex))
       );
-      event.target.style.cursor = "move";
-      event.target.style.opacity = "0.4";
     };
 
     const handleDragEnd = (event) => {
       event.stopImmediatePropagation();
 
-      const { target: element } = event;
+      // const { target: element } = event;
       if (isReverting.current) {
         onRevertingDataList();
       } else {
@@ -87,7 +86,6 @@ const enhance = (App) => ({
         onRevertingDataList();
         setData(updatedData);
       }
-      element.style.opacity = "1";
     };
 
     const handleDragOver = (event) => {
@@ -98,6 +96,7 @@ const enhance = (App) => ({
     };
 
     const handleDragEnter = (event) => {
+      console.log("handleDragEnter", event.target);
       const { currentTarget: element } = event;
       const { id: targetIndex } = element;
 
@@ -109,7 +108,10 @@ const enhance = (App) => ({
           return;
         }
       }
-      if (targetIndex === srcIndex.current) return;
+      if (targetIndex === srcIndex.current) {
+        element.style.opacity = "0.4";
+        return;
+      }
 
       onChoosingAnimationStyle({
         start: parseInt(srcIndex.current),
@@ -125,6 +127,7 @@ const enhance = (App) => ({
     };
 
     const handleDragLeave = ({ target: element }) => {
+      console.log("handleDragLeave");
       element.style.opacity = "1";
     };
 
@@ -183,13 +186,14 @@ const enhance = (App) => ({
     const startIndex = orderList.current.indexOf(start);
     const endIndex = orderList.current.indexOf(end);
 
+    console.log("xxx displayStyle", displayStyle, "imageSize", imageSize);
     switch (displayStyle) {
       case "list":
         handleAddingListAnimation({
           startIndex,
           endIndex,
           elms,
-          widthUnit: 56,
+          widthUnit: imageSize + 4 * margin,
         });
         break;
       case "grid":
@@ -197,8 +201,7 @@ const enhance = (App) => ({
           startIndex,
           endIndex,
           elms,
-          widthUnit: 88,
-          numItemRow: 9,
+          widthUnit: imageSize + 2 * margin,
         });
         break;
       default:
@@ -211,6 +214,8 @@ const enhance = (App) => ({
     elms,
     widthUnit,
   }) => {
+    console.log("xxx widthUnit", widthUnit);
+
     //  Move start point
     let deltaX = 0;
     let deltaY = 0;
@@ -220,10 +225,10 @@ const enhance = (App) => ({
     const elmIndex = orderList.current[startIndex];
 
     const { x, y, z } = getMatrix(elms[elmIndex]);
+    elms[elmIndex].style.transition = `all 0s ease-out`;
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
       y + deltaY
     }px,${z}px)`;
-
     // Move else points
     deltaX = 0;
     deltaY = startIndex < endIndex ? -widthUnit : widthUnit;
@@ -252,11 +257,12 @@ const enhance = (App) => ({
     endIndex,
     elms,
     widthUnit,
-    numItemRow,
   }) => {
     const crossMovingIdxs = detectCrossMovingIdxs(startIndex, endIndex);
     const numRowDiff = detectNumDiffRow(startIndex, endIndex);
     const isSameRow = numRowDiff === 0 ? true : false;
+    console.log("xxx widthUnit", widthUnit);
+
     // Moving start point
     let deltaX = 0;
     let deltaY = 0;
@@ -277,6 +283,7 @@ const enhance = (App) => ({
 
     const elmIndex = orderList.current[startIndex];
     const { x, y, z } = getMatrix(elms[elmIndex]);
+    elms[elmIndex].style.transition = `all 0s ease-out`;
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
       y + deltaY
     }px,${z}px)`;
@@ -343,17 +350,9 @@ const enhance = (App) => ({
 
   // Only for image grid
   const detectCrossMovingPoints = () => {
-    const ROW_WIDTH = 800;
-    const ELEMENT_WDITH = 88;
-    const rowNumberEle = Math.floor(ROW_WIDTH / ELEMENT_WDITH);
-
     let startPoints = [];
     let endPoints = [];
-    for (
-      let i = rowNumberEle;
-      i < orderList.current.length;
-      i += rowNumberEle
-    ) {
+    for (let i = numItemRow; i < orderList.current.length; i += numItemRow) {
       startPoints.push(i);
       endPoints.push(i - 1);
     }
