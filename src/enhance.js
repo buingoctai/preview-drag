@@ -5,8 +5,9 @@ const enhance = (App) => ({
   className,
   subClassName,
   displayStyle,
-  imageSize,
+  itemSize,
   margin,
+  movingUnit,
   numItemRow = 1,
   handleIndexUpdate,
 }) => {
@@ -16,7 +17,6 @@ const enhance = (App) => ({
   const enterIndex = useRef(""); // Fix fire dragenter many time
   const finishCheck = useRef(null); // Fix fire dragenter many time
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
-  // const edgePointRow=useRef(detectCrossMovingPoints());
 
   const setSrcIndex = (val) => {
     srcIndex.current = val;
@@ -61,8 +61,6 @@ const enhance = (App) => ({
 
     const handleDragEnd = (event) => {
       event.stopImmediatePropagation();
-
-      // const { target: element } = event;
       if (isReverting.current) {
         onRevertingDataList();
       } else {
@@ -70,15 +68,17 @@ const enhance = (App) => ({
         let updatedIndex = [];
 
         for (let i = 0; i < orderList.current.length; i++) {
-          if (updatedIndex.includes(orderList.current[i])) {
+          const elementId = orderList.current[i];
+
+          if (updatedIndex.includes(elementId)) {
             continue;
           } else {
-            updatedIndex.push(orderList.current.indexOf(orderList.current[i]));
+            updatedIndex.push(orderList.current.indexOf(elementId));
           }
           updatedData = onRearrangeDataList({
             dataArr: [...updatedData],
-            srcIndex: orderList.current[i],
-            targetIndex: orderList.current.indexOf(orderList.current[i]),
+            srcIndex: elementId,
+            targetIndex: orderList.current.indexOf(elementId),
           });
         }
 
@@ -96,7 +96,6 @@ const enhance = (App) => ({
     };
 
     const handleDragEnter = (event) => {
-      console.log("handleDragEnter", event.target);
       const { currentTarget: element } = event;
       const { id: targetIndex } = element;
 
@@ -127,7 +126,6 @@ const enhance = (App) => ({
     };
 
     const handleDragLeave = ({ target: element }) => {
-      console.log("handleDragLeave");
       element.style.opacity = "1";
     };
 
@@ -135,21 +133,46 @@ const enhance = (App) => ({
       event.stopImmediatePropagation();
       handleDragLeave(event);
 
-      const oldIndex = event.dataTransfer.getData("startIndex");
       const {
-        target: { id: newIndex },
+        target: { id },
       } = event;
+      const oldIndex = event.dataTransfer.getData("startIndex");
+      const newIndex = orderList.current.indexOf(parseInt(id));
 
-      handleIndexUpdate(
-        oldIndex,
-        orderList.current.indexOf(parseInt(newIndex))
-      );
+      handleIndexUpdate(oldIndex, newIndex);
       setIsReverting(false);
     };
 
+    const handleDropContainer = (event) => {
+      event.stopImmediatePropagation();
+      const fullHeightItemRow =
+        Math.floor(data.length / numItemRow) * movingUnit.height;
+      const oldIndex = event.dataTransfer.getData("startIndex");
+
+      setIsReverting(false);
+      handleDragLeave(event);
+      if (event.clientY > fullHeightItemRow) {
+        const lastElm = document.querySelector(
+          `.${className} .${subClassName}:last-child`
+        );
+        const event = new Event("dragenter");
+
+        lastElm.dispatchEvent(event);
+        handleIndexUpdate(oldIndex, data.length - 1);
+        return;
+      }
+      handleIndexUpdate(
+        oldIndex,
+        orderList.current.indexOf(parseInt(oldIndex))
+      );
+    };
+
     // Add event listeners
-    const imgEls = document.querySelectorAll(`.${className} .${subClassName}`);
-    imgEls.forEach(function (e) {
+    const container = document.querySelector(`.${className}`);
+    container.addEventListener("drop", handleDropContainer, false);
+
+    const items = document.querySelectorAll(`.${className} .${subClassName}`);
+    items.forEach((e) => {
       e.addEventListener("dragstart", handleDragStart, false);
       e.addEventListener("dragend", handleDragEnd, false);
       e.addEventListener("dragenter", handleDragEnter, false);
@@ -160,10 +183,8 @@ const enhance = (App) => ({
 
     return () => {
       // Remove event listeners
-      const imgEls = document.querySelectorAll(
-        `.${className} .${subClassName}`
-      );
-      imgEls.forEach(function (e) {
+      const items = document.querySelectorAll(`.${className} .${subClassName}`);
+      items.forEach((e) => {
         e.removeEventListener("dragstart", handleDragStart, false);
         e.removeEventListener("dragend", handleDragEnd, false);
         e.removeEventListener("dragenter", handleDragEnter, false);
@@ -171,6 +192,9 @@ const enhance = (App) => ({
         e.removeEventListener("dragover", handleDragOver, false);
         e.removeEventListener("drop", handleDrop, false);
       });
+
+      const container = document.querySelector(`.${className}`);
+      container.removeEventListener("drop", handleDropContainer, false);
     };
   }, [data]);
 
@@ -186,14 +210,12 @@ const enhance = (App) => ({
     const startIndex = orderList.current.indexOf(start);
     const endIndex = orderList.current.indexOf(end);
 
-    console.log("xxx displayStyle", displayStyle, "imageSize", imageSize);
     switch (displayStyle) {
       case "list":
         handleAddingListAnimation({
           startIndex,
           endIndex,
           elms,
-          widthUnit: imageSize + 4 * margin,
         });
         break;
       case "grid":
@@ -201,41 +223,34 @@ const enhance = (App) => ({
           startIndex,
           endIndex,
           elms,
-          widthUnit: imageSize + 2 * margin,
         });
         break;
       default:
         break;
     }
   };
-  const handleAddingListAnimation = ({
-    startIndex,
-    endIndex,
-    elms,
-    widthUnit,
-  }) => {
-    console.log("xxx widthUnit", widthUnit);
-
-    //  Move start point
+  const handleAddingListAnimation = ({ startIndex, endIndex, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
 
+    //  Move start point
     deltaX = 0;
-    deltaY = (endIndex - startIndex) * widthUnit;
+    deltaY = (endIndex - startIndex) * movingUnit.height;
     const elmIndex = orderList.current[startIndex];
 
-    const { x, y, z } = getMatrix(elms[elmIndex]);
+    const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
     elms[elmIndex].style.transition = `all 0s ease-out`;
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
       y + deltaY
     }px,${z}px)`;
+
     // Move else points
     deltaX = 0;
-    deltaY = startIndex < endIndex ? -widthUnit : widthUnit;
+    deltaY = startIndex < endIndex ? -movingUnit.height : movingUnit.height;
     if (startIndex < endIndex) {
       for (let i = startIndex + 1; i <= endIndex; i++) {
         const elmIndex = orderList.current[i];
-        const { x, y, z } = getMatrix(elms[elmIndex]);
+        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
@@ -245,65 +260,60 @@ const enhance = (App) => ({
     }
     for (let i = startIndex - 1; i >= endIndex; i--) {
       const elmIndex = orderList.current[i];
-      const { x, y, z } = getMatrix(elms[elmIndex]);
+      const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
       elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
         y + deltaY
       }px,${z}px)`;
     }
   };
-  const handleAddingGridAnimation = ({
-    startIndex,
-    endIndex,
-    elms,
-    widthUnit,
-  }) => {
-    const crossMovingIdxs = detectCrossMovingIdxs(startIndex, endIndex);
-    const numRowDiff = detectNumDiffRow(startIndex, endIndex);
-    const isSameRow = numRowDiff === 0 ? true : false;
-    console.log("xxx widthUnit", widthUnit);
-
-    // Moving start point
+  const handleAddingGridAnimation = ({ startIndex, endIndex, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
 
+    const crossMovingIdxs = detectCrossMovingIdxs(startIndex, endIndex);
+    const numRowDiff = detectNumDiffRow(startIndex, endIndex);
+    const isSameRow = numRowDiff === 0 ? true : false;
+
+    // Moving start point
     if (isSameRow) {
-      deltaX = (endIndex - startIndex) * widthUnit;
+      deltaX = (endIndex - startIndex) * movingUnit.width;
     } else {
       if (startIndex < endIndex) {
         deltaX =
-          (endIndex - (startIndex + numRowDiff * numItemRow)) * widthUnit;
-        deltaY = numRowDiff * widthUnit;
+          (endIndex - (startIndex + numRowDiff * numItemRow)) *
+          movingUnit.width;
+        deltaY = numRowDiff * movingUnit.height;
       } else {
         deltaX =
-          (endIndex - (startIndex - numRowDiff * numItemRow)) * widthUnit;
-        deltaY = numRowDiff * -widthUnit;
+          (endIndex - (startIndex - numRowDiff * numItemRow)) *
+          movingUnit.width;
+        deltaY = numRowDiff * -movingUnit.height;
       }
     }
 
     const elmIndex = orderList.current[startIndex];
-    const { x, y, z } = getMatrix(elms[elmIndex]);
+    const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
     elms[elmIndex].style.transition = `all 0s ease-out`;
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
       y + deltaY
     }px,${z}px)`;
 
     // Moving else points
-    deltaX = startIndex < endIndex ? -widthUnit : widthUnit;
+    deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
     deltaY = 0;
 
     if (startIndex < endIndex) {
       for (let i = startIndex + 1; i <= endIndex; i++) {
         if (crossMovingIdxs.includes(i)) {
-          deltaX = (numItemRow - 1) * widthUnit;
-          deltaY = -widthUnit;
+          deltaX = (numItemRow - 1) * movingUnit.width;
+          deltaY = -movingUnit.height;
         } else {
-          deltaX = startIndex < endIndex ? -widthUnit : widthUnit;
+          deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
         const elmIndex = orderList.current[i];
-        const { x, y, z } = getMatrix(elms[elmIndex]);
-
+        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
         }px,${z}px)`;
@@ -311,15 +321,15 @@ const enhance = (App) => ({
     } else {
       for (let i = startIndex - 1; i >= endIndex; i--) {
         if (crossMovingIdxs.includes(i)) {
-          deltaX = (numItemRow - 1) * -widthUnit;
-          deltaY = widthUnit;
+          deltaX = (numItemRow - 1) * -movingUnit.width;
+          deltaY = movingUnit.height;
         } else {
-          deltaX = startIndex < endIndex ? -widthUnit : widthUnit;
+          deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
 
         const elmIndex = orderList.current[i];
-        const { x, y, z } = getMatrix(elms[elmIndex]);
+        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
@@ -390,7 +400,7 @@ const enhance = (App) => ({
     return Math.abs(belongEndIdx - belongStartIdx);
   };
 
-  const getMatrix = (element) => {
+  const getCurrentTranslate = (element) => {
     const values = element.style.transform.split(/\w+\(|\);?/);
     const transform = values[1]
       .split(/,\s?/g)
@@ -402,7 +412,7 @@ const enhance = (App) => ({
       z: transform[2],
     };
   };
-  return <App data={data} imageSize={imageSize} margin={margin} />;
+  return <App data={data} itemSize={itemSize} margin={margin} />;
 };
 
 export default enhance;

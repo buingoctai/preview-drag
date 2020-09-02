@@ -3,9 +3,27 @@ import enhance from "../enhance";
 
 import "./style.css";
 
-const DataList = ({ imageSize, margin, data }) => {
+const DataList = ({ itemSize, margin, data }) => {
   return (
-    <div className="flex column list__data__container">
+    <div
+      className="flex column list__data__container"
+      onDragOver={(event) => {
+        if (event.preventDefault) {
+          event.preventDefault();
+        }
+      }}
+      onDragEnter={(event) => {
+        if (event.preventDefault) {
+          event.preventDefault();
+        }
+      }}
+      onDragStart={(event) => {
+        console.log("onDragStart=", event.target);
+      }}
+      onDrop={(event) => {
+        console.log("onDrop=", event.target);
+      }}
+    >
       {data.map((item, index) => (
         <div
           id={index}
@@ -19,8 +37,8 @@ const DataList = ({ imageSize, margin, data }) => {
         >
           <img
             style={{
-              width: imageSize,
-              height: imageSize,
+              width: itemSize.width,
+              height: itemSize.height,
               pointerEvents: "none",
             }}
             className="m-4"

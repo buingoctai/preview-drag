@@ -5,26 +5,11 @@ import DataList from "./components/DataList";
 
 import EXAMPLE_IMAGES from "./data";
 
-const EXAMPLE_DATA = EXAMPLE_IMAGES.slice(10).map((img, index) => ({
+const EXAMPLE_DATA = EXAMPLE_IMAGES.map((img, index) => ({
   thumb: img.url,
   title: `Title ${index}`,
   sub: `Sub ${index}`,
 }));
-
-// const EXAMPLE_DATA = [
-//   {
-//     sub: "Sub 0",
-//     thumb:
-//       "https://images.unsplash.com/photo-1557840033-30aa5e6ce252?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60",
-//     title: "Title 0",
-//   },
-//   {
-//     sub: "Sub 1",
-//     thumb:
-//       "https://images.unsplash.com/photo-1591319619277-2103a926bf06?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60",
-//     title: "Title 1",
-//   },
-// ];
 
 function App(props) {
   function handleIndexUpdate(oldIndex, newIndex) {
@@ -33,6 +18,12 @@ function App(props) {
 
   const ROW_WIDTH = 800;
   const MARGIN = 4;
+  const WIDTH_ITEM_GRID = 40;
+  const HEIGHT_ITEM_GRID = 40;
+
+  const WIDTH_ITEM_LIST = 60;
+  const HEIGHT_ITEM_LIST = 50;
+
   return (
     <div className="flex column align-center justify-center">
       <div
@@ -43,9 +34,13 @@ function App(props) {
           className="list__image__container"
           subClassName="img__wrap"
           dataList={EXAMPLE_IMAGES}
+          movingUnit={{
+            width: WIDTH_ITEM_GRID + 2 * MARGIN,
+            height: HEIGHT_ITEM_GRID + 2 * MARGIN,
+          }}
+          itemSize={{ width: WIDTH_ITEM_GRID, height: HEIGHT_ITEM_GRID }}
           margin={MARGIN}
-          imageSize={80}
-          numItemRow={Math.floor(ROW_WIDTH / (80 + 2 * MARGIN))}
+          numItemRow={Math.floor(ROW_WIDTH / (WIDTH_ITEM_GRID + 2 * MARGIN))}
           handleIndexUpdate={handleIndexUpdate}
         />
         <DataList
@@ -53,11 +48,14 @@ function App(props) {
           className="list__data__container"
           subClassName="item__wrap"
           dataList={EXAMPLE_DATA}
+          movingUnit={{
+            width: WIDTH_ITEM_LIST + 4 * MARGIN,
+            height: HEIGHT_ITEM_LIST + 4 * MARGIN,
+          }}
+          itemSize={{ width: WIDTH_ITEM_LIST, height: HEIGHT_ITEM_LIST }}
           margin={MARGIN}
-          imageSize={40}
           handleIndexUpdate={handleIndexUpdate}
         />
-        <div style={{ width: "800px", height: "200px" }} draggable="true" />
       </div>
     </div>
   );
