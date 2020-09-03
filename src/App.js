@@ -18,11 +18,11 @@ function App(props) {
 
   const ROW_WIDTH = 800;
   const MARGIN = 4;
-  const WIDTH_ITEM_GRID = 40;
-  const HEIGHT_ITEM_GRID = 40;
+  const WIDTH_ITEM_GRID = 50;
+  const HEIGHT_ITEM_GRID = 50;
 
-  const WIDTH_ITEM_LIST = 60;
-  const HEIGHT_ITEM_LIST = 50;
+  const WIDTH_ITEM_LIST = 40;
+  const HEIGHT_ITEM_LIST = 40;
 
   return (
     <div className="flex column align-center justify-center">

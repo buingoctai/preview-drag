@@ -16,9 +16,6 @@ const ImageGrid = ({ itemSize, margin, data }) => {
           event.preventDefault();
         }
       }}
-      // onDrop={(event) => {
-      //   console.log("onDrop=", event.target);
-      // }}
     >
       {data.map((img, index) => (
         <img
@@ -33,6 +30,7 @@ const ImageGrid = ({ itemSize, margin, data }) => {
             display: "block",
             float: "left",
             border: 0,
+            pointerEvents: "initial",
           }}
           title={index}
           src={img.url}

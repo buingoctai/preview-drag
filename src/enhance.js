@@ -17,6 +17,7 @@ const enhance = (App) => ({
   const enterIndex = useRef(""); // Fix fire dragenter many time
   const finishCheck = useRef(null); // Fix fire dragenter many time
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
+  const isDropOnContainer = useRef(false);
 
   const setSrcIndex = (val) => {
     srcIndex.current = val;
@@ -26,7 +27,7 @@ const enhance = (App) => ({
     isReverting.current = val;
   };
 
-  // fix fire dragenter many time
+  // Fix fire dragenter many time
   const setEnterIndex = (val) => {
     enterIndex.current = val;
   };
@@ -37,6 +38,10 @@ const enhance = (App) => ({
 
   const setOrderList = (val) => {
     orderList.current = val;
+  };
+
+  const setIsDropOnContainer = (val) => {
+    isDropOnContainer.current = val;
   };
 
   useEffect(() => {
@@ -51,6 +56,7 @@ const enhance = (App) => ({
       setIsReverting(true);
       setSrcIndex(srcIndex);
       setOrderList(Array.from(Array(dataList.length).keys()));
+      setIsDropOnContainer(false);
       onAddingTransition();
       event.dataTransfer.dropEffect = "move";
       event.dataTransfer.setData(
@@ -61,31 +67,36 @@ const enhance = (App) => ({
 
     const handleDragEnd = (event) => {
       event.stopImmediatePropagation();
-      if (isReverting.current) {
-        onRevertingDataList();
-      } else {
-        let updatedData = [...data];
-        let updatedIndex = [];
-
-        for (let i = 0; i < orderList.current.length; i++) {
-          const elementId = orderList.current[i];
-
-          if (updatedIndex.includes(elementId)) {
-            continue;
+      setTimeout(
+        () => {
+          if (isReverting.current) {
+            onRevertingDataList();
           } else {
-            updatedIndex.push(orderList.current.indexOf(elementId));
-          }
-          updatedData = onRearrangeDataList({
-            dataArr: [...updatedData],
-            srcIndex: elementId,
-            targetIndex: orderList.current.indexOf(elementId),
-          });
-        }
+            let updatedData = [...data];
+            let updatedIndex = [];
 
-        onRemovingTransition();
-        onRevertingDataList();
-        setData(updatedData);
-      }
+            for (let i = 0; i < orderList.current.length; i++) {
+              const elementId = orderList.current[i];
+
+              if (updatedIndex.includes(elementId)) {
+                continue;
+              } else {
+                updatedIndex.push(orderList.current.indexOf(elementId));
+              }
+              updatedData = onRearrangeDataList({
+                dataArr: [...updatedData],
+                srcIndex: elementId,
+                targetIndex: orderList.current.indexOf(elementId),
+              });
+            }
+
+            onRemovingTransition();
+            onRevertingDataList();
+            setData(updatedData);
+          }
+        },
+        isDropOnContainer ? 400 : 0
+      );
     };
 
     const handleDragOver = (event) => {
@@ -151,13 +162,14 @@ const enhance = (App) => ({
 
       setIsReverting(false);
       handleDragLeave(event);
-      if (event.clientY > fullHeightItemRow) {
+      if (event.offsetY > fullHeightItemRow) {
         const lastElm = document.querySelector(
           `.${className} .${subClassName}:last-child`
         );
         const event = new Event("dragenter");
 
         lastElm.dispatchEvent(event);
+        setIsDropOnContainer(true);
         handleIndexUpdate(oldIndex, data.length - 1);
         return;
       }
@@ -206,7 +218,7 @@ const enhance = (App) => ({
   };
 
   const onChoosingAnimationStyle = ({ start, end, displayStyle }) => {
-    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    let elms = document.querySelectorAll(`.${className} .${subClassName}`);
     const startIndex = orderList.current.indexOf(start);
     const endIndex = orderList.current.indexOf(end);
 
@@ -224,6 +236,9 @@ const enhance = (App) => ({
           endIndex,
           elms,
         });
+        setTimeout(() => {
+          onEnablePointerEvents();
+        }, 400);
         break;
       default:
         break;
@@ -305,6 +320,12 @@ const enhance = (App) => ({
 
     if (startIndex < endIndex) {
       for (let i = startIndex + 1; i <= endIndex; i++) {
+        const elmIndex = orderList.current[i];
+
+        // Turn off catch events on moving cross
+        if (crossMovingIdxs.includes(i) && i !== startIndex && i !== endIndex) {
+          elms[elmIndex].style.pointerEvents = "none";
+        }
         if (crossMovingIdxs.includes(i)) {
           deltaX = (numItemRow - 1) * movingUnit.width;
           deltaY = -movingUnit.height;
@@ -312,7 +333,7 @@ const enhance = (App) => ({
           deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
-        const elmIndex = orderList.current[i];
+
         const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
@@ -320,6 +341,13 @@ const enhance = (App) => ({
       }
     } else {
       for (let i = startIndex - 1; i >= endIndex; i--) {
+        const elmIndex = orderList.current[i];
+
+        // Turn off catch events on moving cross
+        if (crossMovingIdxs.includes(i) && i !== startIndex && i !== endIndex) {
+          elms[elmIndex].style.pointerEvents = "none";
+        }
+
         if (crossMovingIdxs.includes(i)) {
           deltaX = (numItemRow - 1) * -movingUnit.width;
           deltaY = movingUnit.height;
@@ -328,9 +356,7 @@ const enhance = (App) => ({
           deltaY = 0;
         }
 
-        const elmIndex = orderList.current[i];
         const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
         }px,${z}px)`;
@@ -412,6 +438,14 @@ const enhance = (App) => ({
       z: transform[2],
     };
   };
+
+  const onEnablePointerEvents = () => {
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    for (let i = 0; i < elms.length; i++) {
+      elms[i].style.pointerEvents = "initial";
+    }
+  };
+
   return <App data={data} itemSize={itemSize} margin={margin} />;
 };
 

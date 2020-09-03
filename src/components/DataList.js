@@ -17,12 +17,6 @@ const DataList = ({ itemSize, margin, data }) => {
           event.preventDefault();
         }
       }}
-      onDragStart={(event) => {
-        console.log("onDragStart=", event.target);
-      }}
-      onDrop={(event) => {
-        console.log("onDrop=", event.target);
-      }}
     >
       {data.map((item, index) => (
         <div
