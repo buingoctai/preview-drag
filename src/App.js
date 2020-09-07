@@ -47,8 +47,8 @@ function App(props) {
           subClassName="item__wrap"
           dataList={EXAMPLE_DATA}
           movingUnit={{
-            width: WIDTH_ITEM_LIST + 4 * MARGIN,
-            height: HEIGHT_ITEM_LIST + 4 * MARGIN,
+            width: WIDTH_ITEM_LIST + 2 * MARGIN,
+            height: HEIGHT_ITEM_LIST + 2 * MARGIN,
           }}
           itemSize={{ width: WIDTH_ITEM_LIST, height: HEIGHT_ITEM_LIST }}
           margin={MARGIN}

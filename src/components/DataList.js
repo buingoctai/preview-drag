@@ -86,6 +86,7 @@ const DataList = ({
             background: "lightgray",
             transform: "translate3d(0px,0px,0px)",
             margin: margin,
+            height: itemSize.height,
           }}
           draggable="true"
         >
@@ -95,7 +96,6 @@ const DataList = ({
               height: itemSize.height,
               pointerEvents: "none",
             }}
-            className="m-4"
             alt={item.title}
             src={item.thumb}
           />

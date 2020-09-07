@@ -4,7 +4,7 @@ const useUpdateOrderList = ({
   className,
   subClassName,
   dataList,
-  numItemRow,
+  numItemRow = 1,
   movingUnit,
   handleIndexUpdate,
   handleAddingAnimation,
