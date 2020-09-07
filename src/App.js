@@ -30,7 +30,6 @@ function App(props) {
         style={{ width: ROW_WIDTH, display: "flex", flexDirection: "column" }}
       >
         <ImageGrid
-          displayStyle="grid"
           className="list__image__container"
           subClassName="img__wrap"
           dataList={EXAMPLE_IMAGES}
@@ -44,7 +43,6 @@ function App(props) {
           handleIndexUpdate={handleIndexUpdate}
         />
         <DataList
-          displayStyle="list"
           className="list__data__container"
           subClassName="item__wrap"
           dataList={EXAMPLE_DATA}

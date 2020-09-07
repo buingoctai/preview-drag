@@ -72,22 +72,25 @@ const enhance = (App) => ({
           if (isReverting.current) {
             onRevertingDataList();
           } else {
-            let updatedData = [...data];
+            // let updatedData = [...data];
+            let updatedData = [];
             let updatedIndex = [];
 
             for (let i = 0; i < orderList.current.length; i++) {
               const elementId = orderList.current[i];
 
-              if (updatedIndex.includes(elementId)) {
-                continue;
-              } else {
-                updatedIndex.push(orderList.current.indexOf(elementId));
-              }
-              updatedData = onRearrangeDataList({
-                dataArr: [...updatedData],
-                srcIndex: elementId,
-                targetIndex: orderList.current.indexOf(elementId),
-              });
+              // if (updatedIndex.includes(elementId)) {
+              //   continue;
+              // } else {
+              //   updatedIndex.push(orderList.current.indexOf(elementId));
+              // }
+              // updatedData = onRearrangeDataList({
+              //   dataArr: [...updatedData],
+              //   srcIndex: elementId,
+              //   targetIndex: orderList.current.indexOf(elementId),
+              // });
+              const item = data[elementId];
+              updatedData.push(item);
             }
 
             onRemovingTransition();
@@ -154,6 +157,7 @@ const enhance = (App) => ({
       setIsReverting(false);
     };
 
+    // Only for image grid
     const handleDropContainer = (event) => {
       event.stopImmediatePropagation();
       const fullHeightItemRow =
@@ -384,6 +388,19 @@ const enhance = (App) => ({
     }
   };
 
+  const getCurrentTranslate = (element) => {
+    const values = element.style.transform.split(/\w+\(|\);?/);
+    const transform = values[1]
+      .split(/,\s?/g)
+      .map((numStr) => parseInt(numStr));
+
+    return {
+      x: transform[0],
+      y: transform[1],
+      z: transform[2],
+    };
+  };
+
   // Only for image grid
   const detectCrossMovingPoints = () => {
     let startPoints = [];
@@ -424,19 +441,6 @@ const enhance = (App) => ({
     }
 
     return Math.abs(belongEndIdx - belongStartIdx);
-  };
-
-  const getCurrentTranslate = (element) => {
-    const values = element.style.transform.split(/\w+\(|\);?/);
-    const transform = values[1]
-      .split(/,\s?/g)
-      .map((numStr) => parseInt(numStr));
-
-    return {
-      x: transform[0],
-      y: transform[1],
-      z: transform[2],
-    };
   };
 
   const onEnablePointerEvents = () => {
