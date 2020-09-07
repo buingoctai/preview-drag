@@ -80,13 +80,6 @@ const useUpdateOrderList = ({
       );
     };
 
-    const handleDragOver = (event) => {
-      if (event.preventDefault) {
-        event.preventDefault();
-      }
-      return false;
-    };
-
     const handleDragEnter = (event) => {
       const { currentTarget: element } = event;
       const { id: targetIndex } = element;
@@ -169,7 +162,6 @@ const useUpdateOrderList = ({
       e.addEventListener("dragend", handleDragEnd, false);
       e.addEventListener("dragenter", handleDragEnter, false);
       e.addEventListener("dragleave", handleDragLeave, false);
-      e.addEventListener("dragover", handleDragOver, false);
       e.addEventListener("drop", handleDrop, false);
     });
 
@@ -181,7 +173,6 @@ const useUpdateOrderList = ({
         e.removeEventListener("dragend", handleDragEnd, false);
         e.removeEventListener("dragenter", handleDragEnter, false);
         e.removeEventListener("dragleave", handleDragLeave, false);
-        e.removeEventListener("dragover", handleDragOver, false);
         e.removeEventListener("drop", handleDrop, false);
       });
 
