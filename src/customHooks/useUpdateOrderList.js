@@ -61,7 +61,7 @@ const useUpdateOrderList = ({
       setTimeout(
         () => {
           if (isReverting.current) {
-            onRevertingDataList();
+            onRemovingTranslate();
           } else {
             let updatedData = [];
 
@@ -72,7 +72,7 @@ const useUpdateOrderList = ({
             }
 
             onRemovingTransition();
-            onRevertingDataList();
+            onRemovingTranslate();
             setData(updatedData);
           }
         },
@@ -134,7 +134,6 @@ const useUpdateOrderList = ({
       setIsReverting(false);
     };
 
-    // Only for image grid
     const handleDropContainer = (event) => {
       event.stopImmediatePropagation();
       const fullHeightItemRow =
@@ -206,7 +205,7 @@ const useUpdateOrderList = ({
     handleAddingAnimation({ startIndex, endIndex, elms });
   };
 
-  const onRevertingDataList = () => {
+  const onRemovingTranslate = () => {
     const elms = document.querySelectorAll(`.${className} .${subClassName}`);
     for (let i = 0; i < elms.length; i++) {
       elms[i].style.transform = "translate3d(0px,0px,0px)";

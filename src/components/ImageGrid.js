@@ -12,8 +12,8 @@ const ImageGrid = ({
   movingUnit,
   handleIndexUpdate,
   className,
-  margin,
   subClassName,
+  space,
 }) => {
   const handleAddingAnimation = ({ startIndex, endIndex, elms }) => {
     let deltaX = 0;
@@ -71,9 +71,6 @@ const ImageGrid = ({
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
         }px,${z}px)`;
-        setTimeout(() => {
-          onEnablePointerEvents();
-        }, 400);
       }
     } else {
       for (let i = startIndex - 1; i >= endIndex; i--) {
@@ -96,16 +93,18 @@ const ImageGrid = ({
         elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
           y + deltaY
         }px,${z}px)`;
-        setTimeout(() => {
-          onEnablePointerEvents();
-        }, 400);
       }
     }
+    setTimeout(() => {
+      onEnablePointerEvents();
+    }, 400);
   };
 
-  const detectCrossMovingPoints = () => {
+  // Trả về 2 mảng, mỗi mảng chứa index của item có thể bị move cross
+  const detectTwoCrossMovingArr = () => {
     let startPoints = [];
     let endPoints = [];
+
     for (let i = numItemRow; i < orderList.current.length; i += numItemRow) {
       startPoints.push(i);
       endPoints.push(i - 1);
@@ -117,8 +116,7 @@ const ImageGrid = ({
   };
 
   const detectCrossMovingIdxs = (start, end) => {
-    const { startPoints, endPoints } = detectCrossMovingPoints();
-
+    const { startPoints, endPoints } = detectTwoCrossMovingArr();
     const crossMovingIdxs =
       start < end
         ? startPoints.filter((item) => item >= start && item <= end)
@@ -128,7 +126,7 @@ const ImageGrid = ({
   };
 
   const detectNumDiffRow = (start, end) => {
-    const { startPoints, endPoints } = detectCrossMovingPoints();
+    const { startPoints, endPoints } = detectTwoCrossMovingArr();
     let belongStartIdx;
     let belongEndIdx;
 
@@ -178,11 +176,11 @@ const ImageGrid = ({
       {data.map((img, index) => (
         <img
           id={index}
-          className="img__wrap"
+          className="img"
           style={{
             width: itemSize.width,
             height: itemSize.height,
-            margin: margin,
+            margin: space,
             transform: "translate3d(0px,0px,0px)",
             // remove whitespace in break inline
             display: "block",

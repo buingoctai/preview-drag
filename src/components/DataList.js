@@ -12,8 +12,8 @@ const DataList = ({
   movingUnit,
   handleIndexUpdate,
   className,
-  margin,
   subClassName,
+  space,
 }) => {
   const handleAddingAnimation = ({ startIndex, endIndex, elms }) => {
     let deltaX = 0;
@@ -85,7 +85,7 @@ const DataList = ({
           style={{
             background: "lightgray",
             transform: "translate3d(0px,0px,0px)",
-            margin: margin,
+            margin: space,
             height: itemSize.height,
           }}
           draggable="true"

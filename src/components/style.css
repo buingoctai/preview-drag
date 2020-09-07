@@ -3,10 +3,10 @@
   margin-bottom: 50px;
 }
 
-.img__wrap {
-  transition: all 0.2s ease-out;
+.img {
+  transition: all 0.4s ease-out;
 }
-.img__wrap:hover {
+.img:hover {
   cursor: move;
 }
 
