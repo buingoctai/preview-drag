@@ -1,4 +1,7 @@
 .list__image__container {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   margin-top: 100px;
   margin-bottom: 50px;
 }
