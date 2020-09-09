@@ -11,8 +11,8 @@ const useUpdateOrderList = ({
 }) => {
   const [data, setData] = useState(dataList);
   const srcIndex = useRef("");
+  const overIdx = useRef("");
   const isReverting = useRef(true);
-  const isEnterSrcPlace = useRef(null); // Fix fire dragenter many time
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
   const isDropOnContainer = useRef(false);
 
@@ -24,16 +24,16 @@ const useUpdateOrderList = ({
     isReverting.current = val;
   };
 
-  const setIsEnterSrcPlace = (val) => {
-    isEnterSrcPlace.current = val;
-  };
-
   const setOrderList = (val) => {
     orderList.current = val;
   };
 
   const setIsDropOnContainer = (val) => {
     isDropOnContainer.current = val;
+  };
+
+  const setOverIdx = (val) => {
+    overIdx.current = val;
   };
 
   useEffect(() => {
@@ -43,9 +43,9 @@ const useUpdateOrderList = ({
         target: { id: srcIndex },
       } = event;
 
-      setIsEnterSrcPlace(false); // fix fire dragenter many time
-      setIsReverting(true);
       setSrcIndex(srcIndex);
+      setOverIdx(srcIndex);
+      setIsReverting(true);
       setOrderList(Array.from(Array(dataList.length).keys()));
       setIsDropOnContainer(false);
       onAddingTransition();
@@ -54,6 +54,7 @@ const useUpdateOrderList = ({
         "startIndex",
         orderList.current.indexOf(parseInt(srcIndex))
       );
+      event.target.opacity = "0.4";
     };
 
     const handleDragEnd = (event) => {
@@ -78,35 +79,6 @@ const useUpdateOrderList = ({
         },
         isDropOnContainer ? 400 : 0
       );
-    };
-
-    const handleDragEnter = (event) => {
-      const { currentTarget: element } = event;
-      const { id: targetIndex } = element;
-
-      // Fix fire dragenter many time
-      if (!isEnterSrcPlace.current) {
-        if (targetIndex === srcIndex.current) {
-          setIsEnterSrcPlace(true);
-        } else {
-          return;
-        }
-      }
-      if (targetIndex === srcIndex.current) {
-        element.style.opacity = "0.4";
-        return;
-      }
-
-      onHandleAnimation({
-        start: parseInt(srcIndex.current),
-        end: parseInt(targetIndex),
-      });
-      const arrangedOrderList = onRearrangeDataList({
-        dataArr: [...orderList.current],
-        srcIndex: orderList.current.indexOf(parseInt(srcIndex.current)),
-        targetIndex: orderList.current.indexOf(parseInt(targetIndex)),
-      });
-      setOrderList(arrangedOrderList);
     };
 
     const handleDragLeave = ({ target: element }) => {
@@ -139,7 +111,7 @@ const useUpdateOrderList = ({
         const lastElm = document.querySelector(
           `.${className} .${subClassName}:last-child`
         );
-        const event = new Event("dragenter");
+        const event = new Event("dragover");
 
         lastElm.dispatchEvent(event);
         setIsDropOnContainer(true);
@@ -152,6 +124,28 @@ const useUpdateOrderList = ({
       );
     };
 
+    const handleDragOver = (event) => {
+      const { currentTarget: element } = event;
+      const { id: targetIndex } = element;
+
+      if (targetIndex === overIdx.current) return;
+
+      setOverIdx(targetIndex);
+      if (targetIndex === srcIndex.current) {
+        element.style.opacity = "0.4";
+      }
+      onHandleAnimation({
+        start: parseInt(srcIndex.current),
+        end: parseInt(targetIndex),
+      });
+      const arrangedOrderList = onRearrangeDataList({
+        dataArr: [...orderList.current],
+        srcIndex: orderList.current.indexOf(parseInt(srcIndex.current)),
+        targetIndex: orderList.current.indexOf(parseInt(targetIndex)),
+      });
+      setOrderList(arrangedOrderList);
+    };
+
     // Add event listeners
     const container = document.querySelector(`.${className}`);
     container.addEventListener("drop", handleDropContainer, false);
@@ -160,24 +154,24 @@ const useUpdateOrderList = ({
     items.forEach((e) => {
       e.addEventListener("dragstart", handleDragStart, false);
       e.addEventListener("dragend", handleDragEnd, false);
-      e.addEventListener("dragenter", handleDragEnter, false);
+      e.addEventListener("dragover", handleDragOver, false); //
       e.addEventListener("dragleave", handleDragLeave, false);
       e.addEventListener("drop", handleDrop, false);
     });
 
     return () => {
       // Remove event listeners
+      const container = document.querySelector(`.${className}`);
+      container.removeEventListener("drop", handleDropContainer, false);
+
       const items = document.querySelectorAll(`.${className} .${subClassName}`);
       items.forEach((e) => {
         e.removeEventListener("dragstart", handleDragStart, false);
         e.removeEventListener("dragend", handleDragEnd, false);
-        e.removeEventListener("dragenter", handleDragEnter, false);
+        e.removeEventListener("dragover", handleDragOver, false);
         e.removeEventListener("dragleave", handleDragLeave, false);
         e.removeEventListener("drop", handleDrop, false);
       });
-
-      const container = document.querySelector(`.${className}`);
-      container.removeEventListener("drop", handleDropContainer, false);
     };
   }, [data]);
 
