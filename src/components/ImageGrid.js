@@ -15,7 +15,7 @@ const ImageGrid = ({
   subClassName,
   space,
 }) => {
-  const handleAddingAnimation = ({ startIndex, endIndex, elms }) => {
+  const performAnimation = ({ startIndex, endIndex, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
 
@@ -156,7 +156,7 @@ const ImageGrid = ({
     numItemRow,
     movingUnit,
     handleIndexUpdate,
-    handleAddingAnimation,
+    performAnimation,
   });
 
   return (

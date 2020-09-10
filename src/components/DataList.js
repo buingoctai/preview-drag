@@ -15,7 +15,7 @@ const DataList = ({
   subClassName,
   space,
 }) => {
-  const handleAddingAnimation = ({ startIndex, endIndex, elms }) => {
+  const performAnimation = ({ startIndex, endIndex, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
 
@@ -61,7 +61,7 @@ const DataList = ({
     numItemRow,
     movingUnit,
     handleIndexUpdate,
-    handleAddingAnimation,
+    performAnimation,
   });
 
   return (
