@@ -167,11 +167,6 @@ const ImageGrid = ({
           event.preventDefault();
         }
       }}
-      onDragEnter={(event) => {
-        if (event.preventDefault) {
-          event.preventDefault();
-        }
-      }}
     >
       {data.map((img, index) => (
         <img
