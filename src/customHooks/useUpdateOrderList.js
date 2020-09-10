@@ -49,12 +49,12 @@ const useUpdateOrderList = ({
       setOrderList(Array.from(Array(dataList.length).keys()));
       setIsDropOnContainer(false);
       onAddingTransition();
+      onAddingMarkedPoint(srcIndex);
       event.dataTransfer.dropEffect = "move";
       event.dataTransfer.setData(
         "startIndex",
         orderList.current.indexOf(parseInt(srcIndex))
       );
-      event.target.opacity = "0.4";
     };
 
     const handleDragEnd = (event) => {
@@ -81,17 +81,14 @@ const useUpdateOrderList = ({
       );
     };
 
-    const handleDragLeave = ({ target: element }) => {
-      element.style.opacity = "1";
-    };
-
     const handleDrop = (event) => {
       event.stopImmediatePropagation();
-      handleDragLeave(event);
 
       const {
         target: { id },
       } = event;
+      onRemovingMarkedPoint(srcIndex.current);
+
       const oldIndex = event.dataTransfer.getData("startIndex");
       const newIndex = orderList.current.indexOf(parseInt(id));
 
@@ -106,7 +103,7 @@ const useUpdateOrderList = ({
       const oldIndex = event.dataTransfer.getData("startIndex");
 
       setIsReverting(false);
-      handleDragLeave(event);
+      onRemovingMarkedPoint(srcIndex.current);
       if (event.offsetY > fullHeightItemRow) {
         const lastElm = document.querySelector(
           `.${className} .${subClassName}:last-child`
@@ -131,9 +128,7 @@ const useUpdateOrderList = ({
       if (targetIndex === overIdx.current) return;
 
       setOverIdx(targetIndex);
-      if (targetIndex === srcIndex.current) {
-        element.style.opacity = "0.4";
-      }
+
       onHandleAnimation({
         start: parseInt(srcIndex.current),
         end: parseInt(targetIndex),
@@ -154,8 +149,7 @@ const useUpdateOrderList = ({
     items.forEach((e) => {
       e.addEventListener("dragstart", handleDragStart, false);
       e.addEventListener("dragend", handleDragEnd, false);
-      e.addEventListener("dragover", handleDragOver, false); //
-      e.addEventListener("dragleave", handleDragLeave, false);
+      e.addEventListener("dragover", handleDragOver, false);
       e.addEventListener("drop", handleDrop, false);
     });
 
@@ -169,7 +163,6 @@ const useUpdateOrderList = ({
         e.removeEventListener("dragstart", handleDragStart, false);
         e.removeEventListener("dragend", handleDragEnd, false);
         e.removeEventListener("dragover", handleDragOver, false);
-        e.removeEventListener("dragleave", handleDragLeave, false);
         e.removeEventListener("drop", handleDrop, false);
       });
     };
@@ -209,6 +202,16 @@ const useUpdateOrderList = ({
     for (let i = 0; i < elms.length; i++) {
       elms[i].style.transition = "all 0.4s ease-out";
     }
+  };
+
+  const onAddingMarkedPoint = (index) => {
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    elms[index].style.opacity = "0.4";
+  };
+
+  const onRemovingMarkedPoint = (index) => {
+    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
+    elms[index].style.opacity = "1";
   };
 
   return { data, orderList };
