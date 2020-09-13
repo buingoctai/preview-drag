@@ -1,5 +1,6 @@
 import React from "react";
 import { getCurrentTranslate } from "../utils/utils";
+import { ROW_WIDTH } from "../utils/constants";
 
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 
@@ -11,18 +12,19 @@ const DataList = ({
   numItemRow,
   movingUnit,
   handleIndexUpdate,
-  className,
-  subClassName,
+  parentClass,
+  childClass,
   space,
+  displayType,
 }) => {
-  const performAnimation = ({ startIndex, endIndex, elms }) => {
+  const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
 
     //  Move start point
     deltaX = 0;
-    deltaY = (endIndex - startIndex) * movingUnit.height;
-    const elmIndex = orderList.current[startIndex];
+    deltaY = (endIdx - startIdx) * movingUnit.height;
+    const elmIndex = orderList.current[startIdx];
 
     const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
     elms[elmIndex].style.transition = `all 0s ease-out`;
@@ -32,9 +34,9 @@ const DataList = ({
 
     // Move else points
     deltaX = 0;
-    deltaY = startIndex < endIndex ? -movingUnit.height : movingUnit.height;
-    if (startIndex < endIndex) {
-      for (let i = startIndex + 1; i <= endIndex; i++) {
+    deltaY = startIdx < endIdx ? -movingUnit.height : movingUnit.height;
+    if (startIdx < endIdx) {
+      for (let i = startIdx + 1; i <= endIdx; i++) {
         const elmIndex = orderList.current[i];
         const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
@@ -44,7 +46,7 @@ const DataList = ({
       }
       return;
     }
-    for (let i = startIndex - 1; i >= endIndex; i--) {
+    for (let i = startIdx - 1; i >= endIdx; i--) {
       const elmIndex = orderList.current[i];
       const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
@@ -55,23 +57,20 @@ const DataList = ({
   };
 
   const { data, orderList } = useUpdateOrderList({
-    className,
-    subClassName,
+    parentClass,
+    childClass,
     dataList,
     numItemRow,
     movingUnit,
+    displayType,
     handleIndexUpdate,
     performAnimation,
   });
 
   return (
     <div
-      className="flex column list__data__container"
-      onDragOver={(event) => {
-        if (event.preventDefault) {
-          event.preventDefault();
-        }
-      }}
+      className="list__data__container"
+      style={{ width: ROW_WIDTH }}
       onDragEnter={(event) => {
         if (event.preventDefault) {
           event.preventDefault();
@@ -81,7 +80,7 @@ const DataList = ({
       {data.map((item, index) => (
         <div
           id={index}
-          className="flex  item__wrap"
+          className="item__wrap"
           style={{
             background: "lightgray",
             transform: "translate3d(0px,0px,0px)",

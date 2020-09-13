@@ -1,6 +1,13 @@
 import React from "react";
 
-import { getCurrentTranslate } from "../utils/utils";
+import {
+  getCurrentTranslate,
+  updateCss,
+  detectCrossMovingIdxs,
+  detectNumDiffRow,
+} from "../utils/utils";
+import { ROW_WIDTH } from "../utils/constants";
+
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 
 import "./style.css";
@@ -11,36 +18,45 @@ const ImageGrid = ({
   numItemRow,
   movingUnit,
   handleIndexUpdate,
-  className,
-  subClassName,
+  parentClass,
+  childClass,
   space,
+  displayType,
 }) => {
-  const performAnimation = ({ startIndex, endIndex, elms }) => {
+  const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
 
-    const crossMovingIdxs = detectCrossMovingIdxs(startIndex, endIndex);
-    const numRowDiff = detectNumDiffRow(startIndex, endIndex);
+    const crossMovingIdxs = detectCrossMovingIdxs({
+      start: startIdx,
+      end: endIdx,
+      dataArr: orderList.current,
+      numItemRow,
+    });
+    const numRowDiff = detectNumDiffRow({
+      start: startIdx,
+      end: endIdx,
+      dataArr: orderList.current,
+      numItemRow,
+    });
     const isSameRow = numRowDiff === 0 ? true : false;
 
     // Moving start point
     if (isSameRow) {
-      deltaX = (endIndex - startIndex) * movingUnit.width;
+      deltaX = (endIdx - startIdx) * movingUnit.width;
     } else {
-      if (startIndex < endIndex) {
+      if (startIdx < endIdx) {
         deltaX =
-          (endIndex - (startIndex + numRowDiff * numItemRow)) *
-          movingUnit.width;
+          (endIdx - (startIdx + numRowDiff * numItemRow)) * movingUnit.width;
         deltaY = numRowDiff * movingUnit.height;
       } else {
         deltaX =
-          (endIndex - (startIndex - numRowDiff * numItemRow)) *
-          movingUnit.width;
+          (endIdx - (startIdx - numRowDiff * numItemRow)) * movingUnit.width;
         deltaY = numRowDiff * -movingUnit.height;
       }
     }
 
-    const elmIndex = orderList.current[startIndex];
+    const elmIndex = orderList.current[startIdx];
     const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
     elms[elmIndex].style.transition = `all 0s ease-out`;
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
@@ -48,22 +64,22 @@ const ImageGrid = ({
     }px,${z}px)`;
 
     // Moving else points
-    deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
+    deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
     deltaY = 0;
 
-    if (startIndex < endIndex) {
-      for (let i = startIndex + 1; i <= endIndex; i++) {
+    if (startIdx < endIdx) {
+      for (let i = startIdx + 1; i <= endIdx; i++) {
         const elmIndex = orderList.current[i];
 
         // Turn off catch events on moving cross
-        if (crossMovingIdxs.includes(i) && i !== startIndex && i !== endIndex) {
+        if (crossMovingIdxs.includes(i) && i !== startIdx && i !== endIdx) {
           elms[elmIndex].style.pointerEvents = "none";
         }
         if (crossMovingIdxs.includes(i)) {
           deltaX = (numItemRow - 1) * movingUnit.width;
           deltaY = -movingUnit.height;
         } else {
-          deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
+          deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
 
@@ -73,11 +89,11 @@ const ImageGrid = ({
         }px,${z}px)`;
       }
     } else {
-      for (let i = startIndex - 1; i >= endIndex; i--) {
+      for (let i = startIdx - 1; i >= endIdx; i--) {
         const elmIndex = orderList.current[i];
 
         // Turn off catch events on moving cross
-        if (crossMovingIdxs.includes(i) && i !== startIndex && i !== endIndex) {
+        if (crossMovingIdxs.includes(i) && i !== startIdx && i !== endIdx) {
           elms[elmIndex].style.pointerEvents = "none";
         }
 
@@ -85,7 +101,7 @@ const ImageGrid = ({
           deltaX = (numItemRow - 1) * -movingUnit.width;
           deltaY = movingUnit.height;
         } else {
-          deltaX = startIndex < endIndex ? -movingUnit.width : movingUnit.width;
+          deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
 
@@ -96,65 +112,19 @@ const ImageGrid = ({
       }
     }
     setTimeout(() => {
-      onEnablePointerEvents();
+      updateCss(`.${parentClass} .${childClass}`, {
+        pointerEvents: "initial",
+      });
     }, 400);
   };
 
-  // Trả về 2 mảng, mỗi mảng chứa index của item có thể bị move cross
-  const detectTwoCrossMovingArr = () => {
-    let startPoints = [];
-    let endPoints = [];
-
-    for (let i = numItemRow; i < orderList.current.length; i += numItemRow) {
-      startPoints.push(i);
-      endPoints.push(i - 1);
-    }
-    startPoints.unshift(0);
-    endPoints.push(orderList.current.length - 1);
-
-    return { startPoints, endPoints };
-  };
-
-  const detectCrossMovingIdxs = (start, end) => {
-    const { startPoints, endPoints } = detectTwoCrossMovingArr();
-    const crossMovingIdxs =
-      start < end
-        ? startPoints.filter((item) => item >= start && item <= end)
-        : endPoints.filter((item) => item >= end && item <= start);
-
-    return crossMovingIdxs;
-  };
-
-  const detectNumDiffRow = (start, end) => {
-    const { startPoints, endPoints } = detectTwoCrossMovingArr();
-    let belongStartIdx;
-    let belongEndIdx;
-
-    for (let i = 0; i < startPoints.length; i++) {
-      if (startPoints[i] <= start && start <= endPoints[i]) {
-        belongStartIdx = i;
-      }
-      if (startPoints[i] <= end && end <= endPoints[i]) {
-        belongEndIdx = i;
-      }
-    }
-
-    return Math.abs(belongEndIdx - belongStartIdx);
-  };
-
-  const onEnablePointerEvents = () => {
-    const elms = document.querySelectorAll(`.${className} .${subClassName}`);
-    for (let i = 0; i < elms.length; i++) {
-      elms[i].style.pointerEvents = "initial";
-    }
-  };
-
   const { data, orderList } = useUpdateOrderList({
-    className,
-    subClassName,
+    parentClass,
+    childClass,
     dataList,
     numItemRow,
     movingUnit,
+    displayType,
     handleIndexUpdate,
     performAnimation,
   });
@@ -162,7 +132,8 @@ const ImageGrid = ({
   return (
     <div
       className="list__image__container"
-      onDragOver={(event) => {
+      style={{ width: ROW_WIDTH }}
+      onDragEnter={(event) => {
         if (event.preventDefault) {
           event.preventDefault();
         }
@@ -187,6 +158,16 @@ const ImageGrid = ({
           src={img.url}
           alt="images"
           draggable="true"
+          onDragOver={(event) => {
+            if (event.preventDefault) {
+              event.preventDefault();
+            }
+          }}
+          onDragEnter={(event) => {
+            if (event.preventDefault) {
+              event.preventDefault();
+            }
+          }}
         />
       ))}
     </div>
