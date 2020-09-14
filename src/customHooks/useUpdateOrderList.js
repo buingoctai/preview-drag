@@ -54,12 +54,12 @@ const useUpdateOrderList = ({
       handleDragOverItem(event);
     };
 
-    const onDragEndItem = (event) => {
-      handleDragEnd(event);
-    };
-
     const onDropItem = (event) => {
       handleDropItem(event);
+    };
+
+    const onDragEndItem = (event) => {
+      handleDragEnd(event);
     };
 
     const onDragOverContainer = (event) => {
@@ -79,8 +79,8 @@ const useUpdateOrderList = ({
     items.forEach((e) => {
       e.addEventListener("dragstart", onDragStartItem, false);
       e.addEventListener("dragover", onDragOverItem, false);
-      e.addEventListener("dragend", onDragEndItem, false);
       e.addEventListener("drop", onDropItem, false);
+      e.addEventListener("dragend", onDragEndItem, false);
     });
 
     return () => {
@@ -93,8 +93,8 @@ const useUpdateOrderList = ({
       items.forEach((e) => {
         e.removeEventListener("dragstart", onDragStartItem, false);
         e.removeEventListener("dragover", onDragOverItem, false);
-        e.removeEventListener("dragend", onDragEndItem, false);
         e.removeEventListener("drop", onDropItem, false);
+        e.removeEventListener("dragend", onDragEndItem, false);
       });
     };
   }, [data]);
@@ -211,6 +211,7 @@ const useUpdateOrderList = ({
     setIsReverting(false);
     onMarkingStartPoint(queryAllItemStr, srcId.current, false);
 
+    newIdx = orderList.current.indexOf(parseInt(oldIdx));
     switch (displayType) {
       case "grid":
         if (isEnterLastItem) {
@@ -221,18 +222,13 @@ const useUpdateOrderList = ({
 
           lastElm.dispatchEvent(event);
           setIsDropOnContainer(true);
-          newIdx = data.length;
+          newIdx = data.length - 1;
         }
-        newIdx = orderList.current.indexOf(parseInt(oldIdx));
-        handleIndexUpdate(oldIdx, newIdx);
-        break;
-      case "list":
-        newIdx = orderList.current.indexOf(parseInt(oldIdx));
-        handleIndexUpdate(oldIdx, newIdx);
         break;
       default:
         break;
     }
+    handleIndexUpdate(oldIdx, newIdx);
   };
 
   // Handle drag and drop in whitespaces
