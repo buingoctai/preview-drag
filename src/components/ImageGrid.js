@@ -6,7 +6,6 @@ import {
   detectCrossMovingIdxs,
   detectNumDiffRow,
 } from "../utils/utils";
-import { ROW_WIDTH } from "../utils/constants";
 
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 
@@ -15,14 +14,16 @@ import "./style.css";
 const ImageGrid = ({
   dataList,
   itemSize,
-  numItemRow,
-  movingUnit,
+  rowWidth,
   handleIndexUpdate,
-  parentClass,
-  childClass,
   space,
-  displayType,
 }) => {
+  const movingUnit = {
+    width: itemSize.width + 2 * space,
+    height: itemSize.height + 2 * space,
+  };
+  const numItemRow = Math.floor(rowWidth / (itemSize.width + 2 * space));
+
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
@@ -112,19 +113,19 @@ const ImageGrid = ({
       }
     }
     setTimeout(() => {
-      updateCss(`.${parentClass} .${childClass}`, {
+      updateCss(`.${"list__image__container"} .${"img"}`, {
         pointerEvents: "initial",
       });
     }, 400);
   };
 
   const { data, orderList } = useUpdateOrderList({
-    parentClass,
-    childClass,
+    parentClass: "list__image__container",
+    childClass: "img",
     dataList,
     numItemRow,
     movingUnit,
-    displayType,
+    displayType: "grid",
     handleIndexUpdate,
     performAnimation,
   });
@@ -132,7 +133,7 @@ const ImageGrid = ({
   return (
     <div
       className="list__image__container"
-      style={{ width: ROW_WIDTH }}
+      style={{ width: rowWidth }}
       onDragEnter={(event) => {
         if (event.preventDefault) {
           event.preventDefault();

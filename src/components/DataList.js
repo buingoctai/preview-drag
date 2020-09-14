@@ -1,6 +1,6 @@
 import React from "react";
 import { getCurrentTranslate } from "../utils/utils";
-import { ROW_WIDTH } from "../utils/constants";
+import { IMAGE_SIZE } from "../utils/constants";
 
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 
@@ -9,14 +9,15 @@ import "./style.css";
 const DataList = ({
   dataList,
   itemSize,
-  numItemRow,
-  movingUnit,
-  handleIndexUpdate,
-  parentClass,
-  childClass,
+  rowWidth,
   space,
-  displayType,
+  handleIndexUpdate,
 }) => {
+  const movingUnit = {
+    width: itemSize.width + 2 * space,
+    height: itemSize.height + 2 * space,
+  };
+
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
@@ -57,12 +58,11 @@ const DataList = ({
   };
 
   const { data, orderList } = useUpdateOrderList({
-    parentClass,
-    childClass,
+    parentClass: "list__data__container",
+    childClass: "item__wrap",
     dataList,
-    numItemRow,
     movingUnit,
-    displayType,
+    displayType: "list",
     handleIndexUpdate,
     performAnimation,
   });
@@ -70,7 +70,7 @@ const DataList = ({
   return (
     <div
       className="list__data__container"
-      style={{ width: ROW_WIDTH }}
+      style={{ width: rowWidth }}
       onDragEnter={(event) => {
         if (event.preventDefault) {
           event.preventDefault();
@@ -85,14 +85,14 @@ const DataList = ({
             background: "lightgray",
             transform: "translate3d(0px,0px,0px)",
             margin: space,
-            height: itemSize.height,
+            height: IMAGE_SIZE.height,
           }}
           draggable="true"
         >
           <img
             style={{
-              width: itemSize.width,
-              height: itemSize.height,
+              width: IMAGE_SIZE.width,
+              height: IMAGE_SIZE.height,
               pointerEvents: "none",
             }}
             alt={item.title}

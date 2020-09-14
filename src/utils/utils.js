@@ -1,5 +1,4 @@
 import {
-  ROW_WIDTH,
   SPACE,
   WIDTH_ITEM_GRID,
   HEIGHT_ITEM_GRID,
@@ -148,16 +147,16 @@ const onCreateSpaceCoordinates = (query, displayType) => {
         coorDinates = {
           left: [
             { x, y: y - 2 * SPACE },
-            { x: x + ROW_WIDTH, y: y - 2 * SPACE },
+            { x: x + WIDTH_ITEM_LIST, y: y - 2 * SPACE },
 
-            { x: x + ROW_WIDTH, y },
+            { x: x + WIDTH_ITEM_LIST, y },
             { x, y },
           ],
           right: [
             { x, y: y + 40 },
-            { x: x + ROW_WIDTH, y: y + HEIGHT_ITEM_LIST },
+            { x: x + WIDTH_ITEM_LIST, y: y + HEIGHT_ITEM_LIST },
 
-            { x: x + ROW_WIDTH, y: y + HEIGHT_ITEM_LIST + 2 * 10 },
+            { x: x + WIDTH_ITEM_LIST, y: y + HEIGHT_ITEM_LIST + 2 * 10 },
             { x, y: y + HEIGHT_ITEM_LIST + 2 * 10 },
           ],
         };
@@ -168,6 +167,7 @@ const onCreateSpaceCoordinates = (query, displayType) => {
 
     coorDinatesArr.push(coorDinates);
   }
+
   return coorDinatesArr;
 };
 
@@ -217,6 +217,21 @@ export const getEnterIdx = ({
     if (isLeft) return isStartIdx ? i - 1 : i;
     if (isRight) return i;
   }
+
+  // Enter on whitespace
+  const numRow =
+    Math.floor(dataArr.length / numItemRow) + (dataArr.length % numItemRow);
+  const isEnterLastItem = isEnterWhiteSpace({
+    x,
+    y,
+    numItemRow,
+    numRow,
+    query,
+  });
+
+  if (isEnterLastItem) {
+    return dataArr.length - 1;
+  }
 };
 
 export const isEnterWhiteSpace = ({ x, y, numItemRow, numRow, query }) => {
@@ -230,7 +245,7 @@ export const isEnterWhiteSpace = ({ x, y, numItemRow, numRow, query }) => {
     y: startElm.offsetTop + HEIGHT_ITEM_GRID,
   };
   const edgeThree = {
-    x: firstElm.offsetLeft + numRow * (WIDTH_ITEM_GRID + SPACE * 2),
+    x: firstElm.offsetLeft + numItemRow * (WIDTH_ITEM_GRID + SPACE * 2),
     y: firstElm.offsetTop + numRow * (HEIGHT_ITEM_GRID + SPACE * 2),
   };
   const rectangle = [

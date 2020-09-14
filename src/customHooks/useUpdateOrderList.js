@@ -4,7 +4,6 @@ import {
   onRearrangeDataList,
   onMarkingStartPoint,
   getEnterIdx,
-  isEnterWhiteSpace,
 } from "../utils/utils";
 
 const useUpdateOrderList = ({
@@ -20,8 +19,8 @@ const useUpdateOrderList = ({
   const srcId = useRef("");
   const overItemId = useRef("");
   const isReverting = useRef(true);
+  // const isReverting = useRef(false);
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
-  const isDropOnContainer = useRef(false);
   const overSpaceIdx = useRef(""); // Handle drag and drop in whitespaces
 
   const setSrcId = (val) => {
@@ -36,9 +35,7 @@ const useUpdateOrderList = ({
   const setOrderList = (val) => {
     orderList.current = val;
   };
-  const setIsDropOnContainer = (val) => {
-    isDropOnContainer.current = val;
-  };
+
   // Handle drag and drop in whitespaces
   const setOverSpaceIdx = (val) => {
     overSpaceIdx.current = val;
@@ -59,7 +56,7 @@ const useUpdateOrderList = ({
     };
 
     const onDragEndItem = (event) => {
-      handleDragEnd(event);
+      handleDragEndItem(event);
     };
 
     const onDragOverContainer = (event) => {
@@ -117,7 +114,6 @@ const useUpdateOrderList = ({
     setOverSpaceIdx(""); // Handle drag and drop in whitespace
     setIsReverting(true);
     setOrderList(Array.from(Array(dataList.length).keys()));
-    setIsDropOnContainer(false);
     // on Adding Transition
     updateCss(queryAllItemStr, {
       transition: "all 0.4s ease-out",
@@ -133,6 +129,7 @@ const useUpdateOrderList = ({
 
     if (id === overItemId.current) return;
     setOverItemId(id);
+    setOverSpaceIdx("");
     onHandleAnimation({
       start: parseInt(srcId.current),
       end: parseInt(id),
@@ -147,7 +144,6 @@ const useUpdateOrderList = ({
 
   const handleDropItem = (event) => {
     event.stopImmediatePropagation();
-
     const {
       target: { id },
     } = event;
@@ -160,74 +156,44 @@ const useUpdateOrderList = ({
     setIsReverting(false);
   };
 
-  const handleDragEnd = (event) => {
+  const handleDragEndItem = (event) => {
     event.stopImmediatePropagation();
-    setTimeout(
-      () => {
-        onMarkingStartPoint(queryAllItemStr, srcId.current, false);
-        if (isReverting.current) {
-          // on Removing Translate
-          updateCss(queryAllItemStr, {
-            transform: "translate3d(0px,0px,0px)",
-          });
-        } else {
-          let updatedData = [];
+    onMarkingStartPoint(queryAllItemStr, srcId.current, false);
 
-          for (let i = 0; i < orderList.current.length; i++) {
-            const elementId = orderList.current[i];
-            const item = data[elementId];
-            updatedData.push(item);
-          }
+    if (isReverting.current) {
+      // on Removing Translate
+      updateCss(queryAllItemStr, {
+        transform: "translate3d(0px,0px,0px)",
+      });
+    } else {
+      let updatedData = [];
 
-          // onRemovingTransition
-          updateCss(queryAllItemStr, {
-            transition: "all 0s ease-out",
-          });
-          // onRemovingTranslate
-          updateCss(queryAllItemStr, {
-            transform: "translate3d(0px,0px,0px)",
-          });
-          setData(updatedData);
-        }
-      },
-      isDropOnContainer ? 400 : 0
-    );
+      for (let i = 0; i < orderList.current.length; i++) {
+        const elementId = orderList.current[i];
+        const item = data[elementId];
+        updatedData.push(item);
+      }
+
+      // on Removing Transition
+      updateCss(queryAllItemStr, {
+        transition: "all 0s ease-out",
+      });
+      // on Removing Translate
+      updateCss(queryAllItemStr, {
+        transform: "translate3d(0px,0px,0px)",
+      });
+      setData(updatedData);
+    }
   };
 
   const handleDropContainer = (event) => {
     event.stopImmediatePropagation();
-    const numRow =
-      Math.floor(data.length / numItemRow) + (data.length % numItemRow);
     const oldIdx = srcId.current;
     let newIdx;
-    const isEnterLastItem = isEnterWhiteSpace({
-      x: event.pageX,
-      y: event.pageY,
-      numItemRow,
-      numRow,
-      query: queryAllItemStr,
-    });
 
     setIsReverting(false);
     onMarkingStartPoint(queryAllItemStr, srcId.current, false);
-
     newIdx = orderList.current.indexOf(parseInt(oldIdx));
-    switch (displayType) {
-      case "grid":
-        if (isEnterLastItem) {
-          const lastElm = document.querySelector(
-            `${queryAllItemStr}:last-child`
-          );
-          const event = new Event("dragover");
-
-          lastElm.dispatchEvent(event);
-          setIsDropOnContainer(true);
-          newIdx = data.length - 1;
-        }
-        break;
-      default:
-        break;
-    }
     handleIndexUpdate(oldIdx, newIdx);
   };
 
@@ -241,7 +207,6 @@ const useUpdateOrderList = ({
     if (event.target.className === childClass) {
       return;
     }
-
     const detectIdx = getEnterIdx({
       x: event.pageX,
       y: event.pageY,
@@ -250,9 +215,9 @@ const useUpdateOrderList = ({
       query: queryAllItemStr,
       displayType: displayType,
     });
+
     if (typeof detectIdx === "undefined" || detectIdx === overSpaceIdx.current)
       return;
-
     if (detectIdx > srcIdx) {
       effectIdx = detectIdx;
     }
