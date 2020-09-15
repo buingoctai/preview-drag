@@ -158,16 +158,6 @@ const ImageGrid = ({
           src={img.url}
           alt="images"
           draggable="true"
-          onDragOver={(event) => {
-            if (event.preventDefault) {
-              event.preventDefault();
-            }
-          }}
-          onDragEnter={(event) => {
-            if (event.preventDefault) {
-              event.preventDefault();
-            }
-          }}
         />
       ))}
     </div>
