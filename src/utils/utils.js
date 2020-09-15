@@ -19,6 +19,7 @@ export const getCurrentTranslate = (element) => {
 
 export const updateCss = (query, style) => {
   const elms = document.querySelectorAll(query);
+
   for (let i = 0; i < elms.length; i++) {
     Object.keys(style).map((key) => {
       elms[i].style[key] = style[key];
@@ -30,11 +31,13 @@ export const onRearrangeDataList = ({ dataArr, srcIdx, targetIdx }) => {
   const srcItem = dataArr[srcIdx];
   dataArr.splice(srcIdx, 1);
   dataArr.splice(targetIdx, 0, srcItem);
+
   return [...dataArr];
 };
 
 export const onMarkingStartPoint = (query, idx, isProcessing) => {
   const elms = document.querySelectorAll(query);
+
   if (isProcessing) {
     elms[idx].style.opacity = "0.4";
     return;
@@ -164,7 +167,6 @@ const onCreateSpaceCoordinates = (query, displayType) => {
       default:
         break;
     }
-
     coorDinatesArr.push(coorDinates);
   }
 
@@ -212,8 +214,8 @@ export const getEnterIdx = ({
       dataArr,
       numItemRow,
     });
-
     const isStartIdx = startPoints.includes(i);
+
     if (isLeft) return isStartIdx ? i - 1 : i;
     if (isRight) return i;
   }

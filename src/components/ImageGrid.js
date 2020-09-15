@@ -73,7 +73,7 @@ const ImageGrid = ({
         const elmIndex = orderList.current[i];
 
         // Turn off catch events on moving cross
-        if (crossMovingIdxs.includes(i) && i !== startIdx && i !== endIdx) {
+        if (crossMovingIdxs.includes(i)) {
           elms[elmIndex].style.pointerEvents = "none";
         }
         if (crossMovingIdxs.includes(i)) {
@@ -94,10 +94,9 @@ const ImageGrid = ({
         const elmIndex = orderList.current[i];
 
         // Turn off catch events on moving cross
-        if (crossMovingIdxs.includes(i) && i !== startIdx && i !== endIdx) {
+        if (crossMovingIdxs.includes(i)) {
           elms[elmIndex].style.pointerEvents = "none";
         }
-
         if (crossMovingIdxs.includes(i)) {
           deltaX = (numItemRow - 1) * -movingUnit.width;
           deltaY = movingUnit.height;

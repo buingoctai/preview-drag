@@ -25,8 +25,8 @@ const DataList = ({
     //  Move start point
     deltaX = 0;
     deltaY = (endIdx - startIdx) * movingUnit.height;
-    const elmIndex = orderList.current[startIdx];
 
+    const elmIndex = orderList.current[startIdx];
     const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
     elms[elmIndex].style.transition = `all 0s ease-out`;
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${

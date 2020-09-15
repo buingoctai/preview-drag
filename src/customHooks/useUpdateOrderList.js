@@ -100,6 +100,7 @@ const useUpdateOrderList = ({
     const elms = document.querySelectorAll(queryAllItemStr);
     const startIdx = orderList.current.indexOf(start);
     const endIdx = orderList.current.indexOf(end);
+
     performAnimation({ startIdx, endIdx, elms });
   };
 
@@ -134,6 +135,7 @@ const useUpdateOrderList = ({
       start: parseInt(srcId.current),
       end: parseInt(id),
     });
+
     const arrangedOrderList = onRearrangeDataList({
       dataArr: [...orderList.current],
       srcIdx: orderList.current.indexOf(parseInt(srcId.current)),
@@ -147,13 +149,12 @@ const useUpdateOrderList = ({
     const {
       target: { id },
     } = event;
-    onMarkingStartPoint(queryAllItemStr, srcId.current, false);
-
     const oldIdx = srcId.current;
     const newIdx = orderList.current.indexOf(parseInt(id));
 
     handleIndexUpdate(oldIdx, newIdx);
     setIsReverting(false);
+    onMarkingStartPoint(queryAllItemStr, srcId.current, false);
   };
 
   const handleDragEndItem = (event) => {
@@ -173,7 +174,6 @@ const useUpdateOrderList = ({
         const item = data[elementId];
         updatedData.push(item);
       }
-
       // on Removing Transition
       updateCss(queryAllItemStr, {
         transition: "all 0s ease-out",
@@ -189,21 +189,22 @@ const useUpdateOrderList = ({
   const handleDropContainer = (event) => {
     event.stopImmediatePropagation();
     const oldIdx = srcId.current;
-    let newIdx;
+    let newIdx = orderList.current.indexOf(parseInt(oldIdx));
 
     setIsReverting(false);
     onMarkingStartPoint(queryAllItemStr, srcId.current, false);
-    newIdx = orderList.current.indexOf(parseInt(oldIdx));
     handleIndexUpdate(oldIdx, newIdx);
   };
 
   // Handle drag and drop in whitespaces
   const handleDragOverContainer = (event) => {
-    let effectIdx;
-    const srcIdx = orderList.current.indexOf(parseInt(srcId.current));
     if (event.preventDefault) {
       event.preventDefault();
     }
+
+    let effectIdx;
+    const srcIdx = orderList.current.indexOf(parseInt(srcId.current));
+
     if (event.target.className === childClass) {
       return;
     }
