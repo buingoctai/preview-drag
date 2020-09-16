@@ -19,7 +19,6 @@ const useUpdateOrderList = ({
   const srcId = useRef("");
   const overItemId = useRef("");
   const isReverting = useRef(true);
-  // const isReverting = useRef(false);
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
   const overSpaceIdx = useRef(""); // Handle drag and drop in whitespaces
 
@@ -39,6 +38,16 @@ const useUpdateOrderList = ({
   // Handle drag and drop in whitespaces
   const setOverSpaceIdx = (val) => {
     overSpaceIdx.current = val;
+  };
+
+  // new feature
+  const selectedItemIds = useRef([]);
+  const setSelectedItemIds = (val) => {
+    selectedItemIds.current = val;
+  };
+  const isPressingKey = useRef(false);
+  const setIsPressingKey = (val) => {
+    isPressingKey.current = val;
   };
 
   const queryAllItemStr = `.${parentClass} .${childClass}`;
@@ -67,7 +76,46 @@ const useUpdateOrderList = ({
       handleDropContainer(event);
     };
 
+    // new feature
+    const onKeyDown = (event) => {
+      const { keyCode } = event;
+      if (keyCode === 17) setIsPressingKey(true);
+    };
+    const onKeyUp = (event) => {
+      const { keyCode } = event;
+      if (keyCode === 17) setIsPressingKey(false);
+    };
+
+    const onMouseDownItem = (event) => {
+      if (event.target.className !== childClass) {
+        onMarkingStartPoint(
+          queryAllItemStr,
+          [...selectedItemIds.current],
+          false
+        );
+        return;
+      }
+
+      const isMarked = selectedItemIds.current.includes(event.target.id);
+      if (isPressingKey.current) {
+        onMarkingStartPoint(queryAllItemStr, [event.target.id], !isMarked);
+      }
+      if (isPressingKey.current && isMarked) {
+        const newSelectedItemIds = selectedItemIds.current.filter(
+          (item) => item !== event.target.id
+        );
+        setSelectedItemIds([...newSelectedItemIds]);
+      }
+      if (isPressingKey.current && !isMarked) {
+        setSelectedItemIds([...selectedItemIds.current, event.target.id]);
+      }
+    };
+
     // Add event listeners
+    document.addEventListener("mousedown", onMouseDownItem, false); // new feature
+    document.addEventListener("keydown", onKeyDown, false); // new feature
+    document.addEventListener("keyup", onKeyUp, false); // new feature
+
     const container = document.querySelector(`.${parentClass}`);
     container.addEventListener("dragover", onDragOverContainer, false);
     container.addEventListener("drop", onDropContainer, false);
@@ -82,6 +130,10 @@ const useUpdateOrderList = ({
 
     return () => {
       // Remove event listeners
+      document.removeEventListener("mousedown", onMouseDownItem, false); // new feature
+      document.removeEventListener("keydown", onKeyDown, false); // new feature
+      document.removeEventListener("keyup", onKeyUp, false); // new feature
+
       const container = document.querySelector(`.${parentClass}`);
       container.removeEventListener("dragover", onDragOverContainer, false);
       container.removeEventListener("drop", onDropContainer, false);
@@ -119,29 +171,50 @@ const useUpdateOrderList = ({
     updateCss(queryAllItemStr, {
       transition: "all 0.4s ease-out",
     });
-    onMarkingStartPoint(queryAllItemStr, id, true);
+    onMarkingStartPoint(queryAllItemStr, [id], true);
     event.dataTransfer.dropEffect = "move";
+
+    // var img = new Image(60, 40);
+    // img.src =
+    //   "https://d338t8kmirgyke.cloudfront.net/icons/icon_pngs/000/000/086/original/picture-multiple.png";
+
+    // document.body.appendChild(img);
+    // event.dataTransfer.setDragImage(img, 10, 10);
   };
 
   const handleDragOverItem = (event) => {
     const {
       currentTarget: { id },
     } = event;
-
     if (id === overItemId.current) return;
     setOverItemId(id);
     setOverSpaceIdx("");
-    onHandleAnimation({
-      start: parseInt(srcId.current),
-      end: parseInt(id),
-    });
 
-    const arrangedOrderList = onRearrangeDataList({
-      dataArr: [...orderList.current],
-      srcIdx: orderList.current.indexOf(parseInt(srcId.current)),
-      targetIdx: orderList.current.indexOf(parseInt(id)),
-    });
-    setOrderList(arrangedOrderList);
+    if (selectedItemIds.current.length === 0)
+      setSelectedItemIds([srcId.current]);
+
+    let newId = id;
+    for (let i = 0; i < selectedItemIds.current.length; i++) {
+      onHandleAnimation({
+        start: parseInt(selectedItemIds.current[i]),
+        end: parseInt(newId),
+      });
+
+      const arrangedOrderList = onRearrangeDataList({
+        dataArr: [...orderList.current],
+        srcIdx: orderList.current.indexOf(parseInt(selectedItemIds.current[i])),
+        targetIdx: orderList.current.indexOf(parseInt(newId)),
+      });
+      setOrderList(arrangedOrderList);
+
+      newId = selectedItemIds.current[i];
+      const nextIdx = orderList.current.indexOf(
+        parseInt(selectedItemIds.current[i + 1])
+      );
+      const newIdx = orderList.current.indexOf(parseInt(newId));
+
+      if (nextIdx > newIdx) newId = orderList.current[newIdx + 1];
+    }
   };
 
   const handleDropItem = (event) => {
@@ -154,12 +227,14 @@ const useUpdateOrderList = ({
 
     handleIndexUpdate(oldIdx, newIdx);
     setIsReverting(false);
-    onMarkingStartPoint(queryAllItemStr, srcId.current, false);
+    onMarkingStartPoint(queryAllItemStr, [srcId.current], false);
   };
 
   const handleDragEndItem = (event) => {
     event.stopImmediatePropagation();
-    onMarkingStartPoint(queryAllItemStr, srcId.current, false);
+    // onMarkingStartPoint(queryAllItemStr, [srcId.current], false);
+    onMarkingStartPoint(queryAllItemStr, [...selectedItemIds.current], false);
+    setSelectedItemIds([]);
 
     if (isReverting.current) {
       // on Removing Translate
@@ -192,7 +267,7 @@ const useUpdateOrderList = ({
     let newIdx = orderList.current.indexOf(parseInt(oldIdx));
 
     setIsReverting(false);
-    onMarkingStartPoint(queryAllItemStr, srcId.current, false);
+    onMarkingStartPoint(queryAllItemStr, [srcId.current], false);
     handleIndexUpdate(oldIdx, newIdx);
   };
 

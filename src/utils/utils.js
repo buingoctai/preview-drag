@@ -35,14 +35,13 @@ export const onRearrangeDataList = ({ dataArr, srcIdx, targetIdx }) => {
   return [...dataArr];
 };
 
-export const onMarkingStartPoint = (query, idx, isProcessing) => {
+export const onMarkingStartPoint = (query, idxArr, isProcessing) => {
   const elms = document.querySelectorAll(query);
+  const opacity = isProcessing ? "0.4" : "1";
 
-  if (isProcessing) {
-    elms[idx].style.opacity = "0.4";
-    return;
+  for (let i = 0; i < idxArr.length; i++) {
+    elms[idxArr[i]].style.opacity = opacity;
   }
-  elms[idx].style.opacity = "1";
 };
 
 // Trả về 2 mảng, mỗi mảng chứa index của item có thể bị move cross
