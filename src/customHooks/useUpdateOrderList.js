@@ -93,30 +93,15 @@ const useUpdateOrderList = ({
         onMarkingStartPoint(
           queryAllItemStr,
           [...selectedItemIds.current],
-          false
+          false,
+          selectedItemIds
         );
         setSelectedItemIds([]);
+
         return;
       }
 
-      // if (!isPressingKey.current) {
-      //   onMarkingStartPoint(
-      //     queryAllItemStr,
-      //     [...selectedItemIds.current],
-      //     false
-      //   );
-      //   setSelectedItemIds([event.target.id]);
-      //   onMarkingStartPoint(
-      //     queryAllItemStr,
-      //     [...selectedItemIds.current],
-      //     false
-      //   );
-      // }
-
       const isMarked = selectedItemIds.current.includes(event.target.id);
-      if (isPressingKey.current) {
-        onMarkingStartPoint(queryAllItemStr, [event.target.id], !isMarked);
-      }
 
       if (isPressingKey.current && isMarked) {
         const newSelectedItemIds = selectedItemIds.current.filter(
@@ -126,6 +111,15 @@ const useUpdateOrderList = ({
       }
       if (isPressingKey.current && !isMarked) {
         setSelectedItemIds([...selectedItemIds.current, event.target.id]);
+      }
+
+      if (isPressingKey.current) {
+        onMarkingStartPoint(
+          queryAllItemStr,
+          [event.target.id],
+          !isMarked,
+          selectedItemIds.current
+        );
       }
     };
 
@@ -189,7 +183,13 @@ const useUpdateOrderList = ({
     updateCss(queryAllItemStr, {
       transition: "all 0.4s ease-out",
     });
-    onMarkingStartPoint(queryAllItemStr, [id], true);
+
+    // Them vào selected arr truong hop chi chon mot item
+    if (selectedItemIds.current.length === 0) {
+      setSelectedItemIds([srcId.current]);
+      onMarkingStartPoint(queryAllItemStr, [id], true, selectedItemIds.current);
+    }
+
     event.dataTransfer.dropEffect = "move";
 
     // Select muiti items
@@ -214,9 +214,6 @@ const useUpdateOrderList = ({
     // if (selectedItemIds.current.includes(id)) return;
     setOverItemId(id);
     setOverSpaceIdx("");
-
-    if (selectedItemIds.current.length === 0)
-      setSelectedItemIds([srcId.current]);
 
     let newId = id;
     for (let i = 0; i < selectedItemIds.current.length; i++) {
@@ -250,15 +247,18 @@ const useUpdateOrderList = ({
     const oldIdx = srcId.current;
     const newIdx = orderList.current.indexOf(parseInt(id));
 
-    handleIndexUpdate(oldIdx, newIdx);
     setIsReverting(false);
-    onMarkingStartPoint(queryAllItemStr, [srcId.current], false);
+    handleIndexUpdate(oldIdx, newIdx);
   };
 
   const handleDragEndItem = (event) => {
     event.stopImmediatePropagation();
-    // onMarkingStartPoint(queryAllItemStr, [srcId.current], false);
-    onMarkingStartPoint(queryAllItemStr, [...selectedItemIds.current], false);
+    onMarkingStartPoint(
+      queryAllItemStr,
+      [...selectedItemIds.current],
+      false,
+      selectedItemIds.current
+    );
     setSelectedItemIds([]);
 
     if (isReverting.current) {
@@ -292,7 +292,6 @@ const useUpdateOrderList = ({
     let newIdx = orderList.current.indexOf(parseInt(oldIdx));
 
     setIsReverting(false);
-    onMarkingStartPoint(queryAllItemStr, [srcId.current], false);
     handleIndexUpdate(oldIdx, newIdx);
   };
 

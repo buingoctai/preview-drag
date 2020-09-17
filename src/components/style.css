@@ -21,7 +21,6 @@
 }
 .item__wrap {
   display: flex;
-
   transition: all 0.4s ease-out;
 }
 

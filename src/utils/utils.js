@@ -35,12 +35,42 @@ export const onRearrangeDataList = ({ dataArr, srcIdx, targetIdx }) => {
   return [...dataArr];
 };
 
-export const onMarkingStartPoint = (query, idxArr, isProcessing) => {
+export const onMarkingStartPoint = (
+  query,
+  idxArr,
+  isProcessing,
+  selectedItemIds
+) => {
   const elms = document.querySelectorAll(query);
-  const opacity = isProcessing ? "0.4" : "1";
+  const opacity = isProcessing ? "0.8" : "1";
 
+  console.log("query", elms);
   for (let i = 0; i < idxArr.length; i++) {
+    console.log("query", elms[idxArr[i]]);
     elms[idxArr[i]].style.opacity = opacity;
+
+    if (isProcessing) {
+      const text = document.createElement("span");
+      text.style.position = "absolute";
+      text.textContent = selectedItemIds.length;
+      text.style.color = "white";
+      text.style.pointerEvents = "none";
+      text.className = "text";
+
+      elms[idxArr[i]].appendChild(text);
+    } else {
+      const [removedChild] = elms[idxArr[i]].getElementsByClassName("text");
+
+      if (removedChild) {
+        elms[idxArr[i]].removeChild(removedChild);
+      }
+      // cập nhật thứ tự khi unselect
+      if (idxArr.length !== selectedItemIds.length) {
+        for (let i = 0; i < selectedItemIds.length; i++) {
+          elms[selectedItemIds[i]].lastElementChild.textContent = i + 1;
+        }
+      }
+    }
   }
 };
 
@@ -280,7 +310,7 @@ export const getSubData = ({ idArr, orderList, dataArr }) => {
       subData.push(dataArr[i]);
     }
   }
-  return subData.length > 10 ? subData.slice(0, 11) : subData;
+  return subData.length > 10 ? subData.slice(0, 3) : subData;
 };
 
 export const createDragImageStyle = ({ dataArr, width, height }) => {
@@ -355,6 +385,7 @@ export const createDragImage = ({
   text.style.backgroundColor = "blue";
   text.style.border = "1px solid white";
   text.style.borderRadius = "1px";
+  text.style.color = "white";
 
   textWrap.appendChild(text);
   imgWrap.appendChild(textWrap);

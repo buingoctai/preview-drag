@@ -142,25 +142,40 @@ const ImageGrid = ({
       }}
     >
       {data.map((img, index) => (
-        <img
+        <div
           id={index}
           className="img"
           style={{
-            width: itemSize.width,
-            height: itemSize.height,
-            margin: space,
-            transform: "translate3d(0px,0px,0px)",
-            // remove whitespace in break inline
-            display: "block",
-            float: "left",
-            border: 0,
             pointerEvents: "initial",
+            transform: "translate3d(0px,0px,0px)",
+            margin: space,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
-          title={index}
-          src={img.url}
-          alt="images"
           draggable="true"
-        />
+        >
+          <img
+            // id={index}
+            // className="img"
+            style={{
+              width: itemSize.width,
+              height: itemSize.height,
+              // margin: space,
+              // transform: "translate3d(0px,0px,0px)",
+              // remove whitespace in break inline
+              display: "block",
+              float: "left",
+              border: 0,
+              pointerEvents: "none",
+            }}
+            title={index}
+            src={img.url}
+            alt="images"
+            // draggable="true"
+          />
+          {/* <span style={{ position: "absolute" }}>text</span> */}
+        </div>
       ))}
     </div>
   );
