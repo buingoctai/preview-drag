@@ -2,11 +2,11 @@ const ROW_WIDTH = 550;
 const SPACE = 8;
 
 // for grid display
-const WIDTH_ITEM_GRID = 80;
+const WIDTH_ITEM_GRID = 60;
 const HEIGHT_ITEM_GRID = 50;
 
 // for list display
-const IMAGE_SIZE = { width: 40, height: 50 };
+const IMAGE_SIZE = { width: 60, height: 40 };
 const WIDTH_ITEM_LIST = ROW_WIDTH;
 const HEIGHT_ITEM_LIST = IMAGE_SIZE.height;
 

@@ -63,6 +63,7 @@ const DataList = ({
     childClass: "item__wrap",
     dataList,
     icon,
+    itemSize,
     movingUnit,
     displayType: "list",
     handleIndexUpdate,
@@ -88,6 +89,7 @@ const DataList = ({
             transform: "translate3d(0px,0px,0px)",
             margin: space,
             height: IMAGE_SIZE.height,
+            width: itemSize.width,
           }}
           draggable="true"
         >
@@ -98,7 +100,7 @@ const DataList = ({
               pointerEvents: "none",
             }}
             alt={item.title}
-            src={item.url}
+            src={item.thumb}
           />
 
           <div className="flex column" style={{ pointerEvents: "none" }}>

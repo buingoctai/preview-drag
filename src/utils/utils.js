@@ -35,39 +35,46 @@ export const onRearrangeDataList = ({ dataArr, srcIdx, targetIdx }) => {
   return [...dataArr];
 };
 
-export const onMarkingStartPoint = (
+export const onMarkingStartPoint = ({
   query,
-  idxArr,
+  effectedArr,
   isProcessing,
-  selectedItemIds
-) => {
+  selectedBeforeArr,
+  onlyOneItem = false,
+  itemSize,
+}) => {
   const elms = document.querySelectorAll(query);
   const opacity = isProcessing ? "0.8" : "1";
 
-  console.log("query", elms);
-  for (let i = 0; i < idxArr.length; i++) {
-    console.log("query", elms[idxArr[i]]);
-    elms[idxArr[i]].style.opacity = opacity;
+  for (let i = 0; i < effectedArr.length; i++) {
+    elms[effectedArr[i]].style.opacity = opacity;
 
+    if (onlyOneItem) return;
     if (isProcessing) {
       const text = document.createElement("span");
+      text.className = "numberTxt";
       text.style.position = "absolute";
-      text.textContent = selectedItemIds.length;
       text.style.color = "white";
       text.style.pointerEvents = "none";
-      text.className = "text";
+      text.style.fontWeight = "bold";
+      text.style.width = `${itemSize.width}px`;
+      text.style.height = `${itemSize.height}px`;
+      text.style.display = "flex";
+      text.style.justifyContent = "center";
+      text.style.alignItems = "center";
+      text.textContent = selectedBeforeArr.length;
 
-      elms[idxArr[i]].appendChild(text);
+      elms[effectedArr[i]].appendChild(text);
     } else {
-      const [removedChild] = elms[idxArr[i]].getElementsByClassName("text");
+      const [removedChild] = elms[effectedArr[i]].getElementsByClassName(
+        "numberTxt"
+      );
+      if (removedChild) elms[effectedArr[i]].removeChild(removedChild);
 
-      if (removedChild) {
-        elms[idxArr[i]].removeChild(removedChild);
-      }
-      // cập nhật thứ tự khi unselect
-      if (idxArr.length !== selectedItemIds.length) {
-        for (let i = 0; i < selectedItemIds.length; i++) {
-          elms[selectedItemIds[i]].lastElementChild.textContent = i + 1;
+      // Update text number order on unselect
+      if (effectedArr.length !== selectedBeforeArr.length) {
+        for (let i = 0; i < selectedBeforeArr.length; i++) {
+          elms[selectedBeforeArr[i]].lastElementChild.textContent = i + 1;
         }
       }
     }
@@ -310,10 +317,10 @@ export const getSubData = ({ idArr, orderList, dataArr }) => {
       subData.push(dataArr[i]);
     }
   }
-  return subData.length > 10 ? subData.slice(0, 3) : subData;
+  return subData.length > 3 ? subData.slice(0, 3) : subData;
 };
 
-export const createDragImageStyle = ({ dataArr, width, height }) => {
+export const createDragImageStyle = ({ dataArr, width, height, fieldName }) => {
   let backgroundImage = "";
   let backgroundPosition = "";
   const maxTop = 16;
@@ -322,12 +329,13 @@ export const createDragImageStyle = ({ dataArr, width, height }) => {
   const left = Math.floor(maxLeft / (dataArr.length - 1));
 
   for (let i = 0; i < dataArr.length - 1; i++) {
-    backgroundImage += `url('${dataArr[i].url}'),`;
+    backgroundImage += `url('${dataArr[i][fieldName]}'),`;
     backgroundPosition += `left ${(dataArr.length - 1 - i) * left}px top ${
       (dataArr.length - 1 - i) * top
     }px,`;
   }
-  backgroundImage += `url('${dataArr[dataArr.length - 1].url}')`;
+  console.log(fieldName);
+  backgroundImage += `url('${dataArr[dataArr.length - 1][fieldName]}')`;
   backgroundPosition += "left 0px top 0px";
 
   const style = {
@@ -348,6 +356,7 @@ export const createDragImage = ({
   dataArr,
   width,
   height,
+  fieldName,
 }) => {
   const subData = getSubData({
     idArr,
@@ -360,9 +369,16 @@ export const createDragImage = ({
   const text = document.createElement("span");
   text.innerText = idArr.length;
 
-  const style = createDragImageStyle({ dataArr: subData, width, height });
+  const style = createDragImageStyle({
+    dataArr: subData,
+    width,
+    height,
+    fieldName,
+  });
 
-  imgWrap.style.position = "relative";
+  imgWrap.id = "dargImage";
+  imgWrap.style.position = "absolute";
+  //  imgWrap.style.top = "-1000px";
   imgWrap.style.width = style.width;
   imgWrap.style.height = style.height;
   imgWrap.style.backgroundImage = style.backgroundImage;
@@ -389,5 +405,6 @@ export const createDragImage = ({
 
   textWrap.appendChild(text);
   imgWrap.appendChild(textWrap);
+
   return imgWrap;
 };

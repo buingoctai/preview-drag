@@ -15,7 +15,7 @@ import {
 import EXAMPLE_IMAGES from "./data";
 
 const EXAMPLE_DATA = EXAMPLE_IMAGES.map((img, index) => ({
-  url: img.url,
+  thumb: img.url,
   title: `Title ${index}`,
   sub: `Sub ${index}`,
 }));
@@ -33,15 +33,22 @@ function App(props) {
       <ImageGrid
         dataList={EXAMPLE_IMAGES}
         itemSize={{ width: WIDTH_ITEM_GRID, height: HEIGHT_ITEM_GRID }}
-        icon={{ width: WIDTH_ITEM_GRID, height: HEIGHT_ITEM_GRID }}
+        icon={{
+          width: WIDTH_ITEM_GRID,
+          height: HEIGHT_ITEM_GRID,
+          fieldName: "url",
+        }}
         rowWidth={ROW_WIDTH}
         space={SPACE}
         handleIndexUpdate={handleIndexUpdate}
       />
       <DataList
         dataList={EXAMPLE_DATA}
-        itemSize={{ width: WIDTH_ITEM_LIST, height: HEIGHT_ITEM_LIST }}
-        icon={IMAGE_SIZE}
+        itemSize={{
+          width: WIDTH_ITEM_LIST,
+          height: HEIGHT_ITEM_LIST,
+        }}
+        icon={{ ...IMAGE_SIZE, fieldName: "thumb" }}
         rowWidth={ROW_WIDTH}
         space={SPACE}
         handleIndexUpdate={handleIndexUpdate}
@@ -64,15 +71,45 @@ function App(props) {
         <div
           style={{
             position: "absolute",
-            width: "65px",
-            height: "55px",
+            width: "64px",
+            height: "54px",
             display: "flex",
             top: "16px",
             left: "16px",
+            border: "1px solid yellow",
+            borderStyle: "dotted",
           }}
         >
           <span>8</span>
         </div>
+        <div
+          style={{
+            position: "absolute",
+            width: "64px",
+            height: "54px",
+            display: "flex",
+            top: "8px",
+            left: "8px",
+            border: "1px solid yellow",
+            borderBottom: "0px",
+            borderRight: "0px",
+            borderStyle: "dotted",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: "64px",
+            height: "54px",
+            display: "flex",
+            top: "0px",
+            left: "0px",
+            border: "1px solid yellow",
+            borderBottom: "0px",
+            borderRight: "0px",
+            borderStyle: "dotted",
+          }}
+        />
       </div> */}
     </div>
   );

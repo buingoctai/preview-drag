@@ -124,6 +124,7 @@ const ImageGrid = ({
     childClass: "img",
     dataList,
     icon,
+    itemSize,
     numItemRow,
     movingUnit,
     displayType: "grid",

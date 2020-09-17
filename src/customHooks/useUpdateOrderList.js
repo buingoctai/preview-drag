@@ -12,6 +12,7 @@ const useUpdateOrderList = ({
   childClass,
   dataList,
   icon,
+  itemSize,
   numItemRow = 1,
   displayType,
   handleIndexUpdate,
@@ -74,7 +75,6 @@ const useUpdateOrderList = ({
       setIsReverting(false);
     };
 
-    // new feature
     const onKeyDown = (event) => {
       const { keyCode } = event;
       if (keyCode === 17) setIsPressingKey(true);
@@ -85,44 +85,13 @@ const useUpdateOrderList = ({
     };
 
     const onMouseDownItem = (event) => {
-      if (event.target.className !== childClass) {
-        onMarkingStartPoint(
-          queryAllItemStr,
-          [...selectedItemIds.current],
-          false,
-          selectedItemIds
-        );
-        setSelectedItemIds([]);
-
-        return;
-      }
-
-      const isMarked = selectedItemIds.current.includes(event.target.id);
-
-      if (isPressingKey.current && isMarked) {
-        const newSelectedItemIds = selectedItemIds.current.filter(
-          (item) => item !== event.target.id
-        );
-        setSelectedItemIds([...newSelectedItemIds]);
-      }
-      if (isPressingKey.current && !isMarked) {
-        setSelectedItemIds([...selectedItemIds.current, event.target.id]);
-      }
-
-      if (isPressingKey.current) {
-        onMarkingStartPoint(
-          queryAllItemStr,
-          [event.target.id],
-          !isMarked,
-          selectedItemIds.current
-        );
-      }
+      handleClickItem(event);
     };
 
     // Add event listeners
-    document.addEventListener("mousedown", onMouseDownItem, false); // new feature
-    document.addEventListener("keydown", onKeyDown, false); // new feature
-    document.addEventListener("keyup", onKeyUp, false); // new feature
+    document.addEventListener("mousedown", onMouseDownItem, false);
+    document.addEventListener("keydown", onKeyDown, false);
+    document.addEventListener("keyup", onKeyUp, false);
 
     const container = document.querySelector(`.${parentClass}`);
     container.addEventListener("dragover", onDragOverContainer, false);
@@ -137,9 +106,9 @@ const useUpdateOrderList = ({
 
     return () => {
       // Remove event listeners
-      document.removeEventListener("mousedown", onMouseDownItem, false); // new feature
-      document.removeEventListener("keydown", onKeyDown, false); // new feature
-      document.removeEventListener("keyup", onKeyUp, false); // new feature
+      document.removeEventListener("mousedown", onMouseDownItem, false);
+      document.removeEventListener("keydown", onKeyDown, false);
+      document.removeEventListener("keyup", onKeyUp, false);
 
       const container = document.querySelector(`.${parentClass}`);
       container.removeEventListener("dragover", onDragOverContainer, false);
@@ -154,12 +123,53 @@ const useUpdateOrderList = ({
     };
   }, [data]);
 
-  const onHandleAnimation = ({ start, end }) => {
-    const elms = document.querySelectorAll(queryAllItemStr);
-    const startIdx = orderList.current.indexOf(start);
-    const endIdx = orderList.current.indexOf(end);
+  const handleClickItem = (event) => {
+    const isMarked = selectedItemIds.current.includes(event.target.id);
 
-    performAnimation({ startIdx, endIdx, elms });
+    if (event.target.className !== childClass) {
+      onMarkingStartPoint({
+        query: queryAllItemStr,
+        effectedArr: [...selectedItemIds.current],
+        isProcessing: false,
+        selectedBeforeArr: selectedItemIds,
+      });
+      setSelectedItemIds([]);
+      return;
+    }
+
+    if (
+      !isPressingKey.current &&
+      !selectedItemIds.current.includes(event.target.id)
+    ) {
+      onMarkingStartPoint({
+        query: queryAllItemStr,
+        effectedArr: [...selectedItemIds.current],
+        isProcessing: false,
+        selectedBeforeArr: selectedItemIds.current,
+      });
+      setSelectedItemIds([]);
+      return;
+    }
+
+    if (isPressingKey.current && isMarked) {
+      const newSelectedItemIds = selectedItemIds.current.filter(
+        (item) => item !== event.target.id
+      );
+      setSelectedItemIds([...newSelectedItemIds]);
+    }
+    if (isPressingKey.current && !isMarked) {
+      setSelectedItemIds([...selectedItemIds.current, event.target.id]);
+    }
+
+    if (isPressingKey.current) {
+      onMarkingStartPoint({
+        query: queryAllItemStr,
+        effectedArr: [event.target.id],
+        isProcessing: !isMarked,
+        selectedBeforeArr: selectedItemIds.current,
+        itemSize,
+      });
+    }
   };
 
   const handleDragStartItem = (event) => {
@@ -181,9 +191,14 @@ const useUpdateOrderList = ({
     // Them vào selected arr truong hop chi chon mot item
     if (selectedItemIds.current.length === 0) {
       setSelectedItemIds([srcId.current]);
-      onMarkingStartPoint(queryAllItemStr, [id], true, selectedItemIds.current);
+      onMarkingStartPoint({
+        query: queryAllItemStr,
+        effectedArr: [id],
+        isProcessing: true,
+        selectedBeforeArr: selectedItemIds.current,
+        onlyOneItem: true,
+      });
     }
-
     event.dataTransfer.dropEffect = "move";
 
     // Select muiti items
@@ -194,6 +209,7 @@ const useUpdateOrderList = ({
         dataArr: data,
         width: icon.width,
         height: icon.height,
+        fieldName: icon.fieldName,
       });
       document.body.appendChild(imgWrap);
       event.dataTransfer.setDragImage(imgWrap, 10, 10);
@@ -204,8 +220,8 @@ const useUpdateOrderList = ({
     const {
       currentTarget: { id },
     } = event;
+
     if (id === overItemId.current) return;
-    // if (selectedItemIds.current.includes(id)) return;
     setOverItemId(id);
     setOverSpaceIdx("");
 
@@ -235,12 +251,12 @@ const useUpdateOrderList = ({
 
   const handleDragEndItem = (event) => {
     event.stopImmediatePropagation();
-    onMarkingStartPoint(
-      queryAllItemStr,
-      [...selectedItemIds.current],
-      false,
-      selectedItemIds.current
-    );
+    onMarkingStartPoint({
+      query: queryAllItemStr,
+      effectedArr: [...selectedItemIds.current],
+      isProcessing: false,
+      selectedBeforeArr: selectedItemIds.current,
+    });
     setSelectedItemIds([]);
 
     if (isReverting.current) {
@@ -312,6 +328,13 @@ const useUpdateOrderList = ({
     effectElm.dispatchEvent(dragoverEvent);
   };
 
+  const onHandleAnimation = ({ start, end }) => {
+    const elms = document.querySelectorAll(queryAllItemStr);
+    const startIdx = orderList.current.indexOf(start);
+    const endIdx = orderList.current.indexOf(end);
+
+    performAnimation({ startIdx, endIdx, elms });
+  };
   return { data, orderList };
 };
 
