@@ -62,10 +62,6 @@ const useUpdateOrderList = ({
       handleDragOverItem(event);
     };
 
-    const onDropItem = (event) => {
-      handleDropItem(event);
-    };
-
     const onDragEndItem = (event) => {
       handleDragEndItem(event);
     };
@@ -74,8 +70,8 @@ const useUpdateOrderList = ({
       handleDragOverContainer(event);
     };
 
-    const onDropContainer = (event) => {
-      handleDropContainer(event);
+    const onDropContainer = () => {
+      setIsReverting(false);
     };
 
     // new feature
@@ -136,7 +132,6 @@ const useUpdateOrderList = ({
     items.forEach((e) => {
       e.addEventListener("dragstart", onDragStartItem, false);
       e.addEventListener("dragover", onDragOverItem, false);
-      e.addEventListener("drop", onDropItem, false);
       e.addEventListener("dragend", onDragEndItem, false);
     });
 
@@ -154,7 +149,6 @@ const useUpdateOrderList = ({
       items.forEach((e) => {
         e.removeEventListener("dragstart", onDragStartItem, false);
         e.removeEventListener("dragover", onDragOverItem, false);
-        e.removeEventListener("drop", onDropItem, false);
         e.removeEventListener("dragend", onDragEndItem, false);
       });
     };
@@ -239,18 +233,6 @@ const useUpdateOrderList = ({
     }
   };
 
-  const handleDropItem = (event) => {
-    event.stopImmediatePropagation();
-    const {
-      target: { id },
-    } = event;
-    const oldIdx = srcId.current;
-    const newIdx = orderList.current.indexOf(parseInt(id));
-
-    setIsReverting(false);
-    handleIndexUpdate(oldIdx, newIdx);
-  };
-
   const handleDragEndItem = (event) => {
     event.stopImmediatePropagation();
     onMarkingStartPoint(
@@ -284,15 +266,8 @@ const useUpdateOrderList = ({
       });
       setData(updatedData);
     }
-  };
 
-  const handleDropContainer = (event) => {
-    event.stopImmediatePropagation();
-    const oldIdx = srcId.current;
-    let newIdx = orderList.current.indexOf(parseInt(oldIdx));
-
-    setIsReverting(false);
-    handleIndexUpdate(oldIdx, newIdx);
+    handleIndexUpdate(orderList.current);
   };
 
   // Handle drag and drop in whitespaces

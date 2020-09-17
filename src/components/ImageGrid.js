@@ -156,13 +156,9 @@ const ImageGrid = ({
           draggable="true"
         >
           <img
-            // id={index}
-            // className="img"
             style={{
               width: itemSize.width,
               height: itemSize.height,
-              // margin: space,
-              // transform: "translate3d(0px,0px,0px)",
               // remove whitespace in break inline
               display: "block",
               float: "left",
@@ -172,9 +168,7 @@ const ImageGrid = ({
             title={index}
             src={img.url}
             alt="images"
-            // draggable="true"
           />
-          {/* <span style={{ position: "absolute" }}>text</span> */}
         </div>
       ))}
     </div>

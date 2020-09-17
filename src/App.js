@@ -21,8 +21,11 @@ const EXAMPLE_DATA = EXAMPLE_IMAGES.map((img, index) => ({
 }));
 
 function App(props) {
-  function handleIndexUpdate(oldIndex, newIndex) {
-    console.log("handleIndexUpdate", oldIndex, newIndex);
+  // function handleIndexUpdate(oldIndex, newIndex) {
+  //   console.log("handleIndexUpdate", oldIndex, newIndex);
+  // }
+  function handleIndexUpdate(orderList) {
+    console.log("handleIndexUpdate", orderList);
   }
 
   return (
