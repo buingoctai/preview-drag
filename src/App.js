@@ -9,12 +9,13 @@ import {
   HEIGHT_ITEM_GRID,
   WIDTH_ITEM_LIST,
   HEIGHT_ITEM_LIST,
+  IMAGE_SIZE,
 } from "./utils/constants";
 
 import EXAMPLE_IMAGES from "./data";
 
 const EXAMPLE_DATA = EXAMPLE_IMAGES.map((img, index) => ({
-  thumb: img.url,
+  url: img.url,
   title: `Title ${index}`,
   sub: `Sub ${index}`,
 }));
@@ -29,6 +30,7 @@ function App(props) {
       <ImageGrid
         dataList={EXAMPLE_IMAGES}
         itemSize={{ width: WIDTH_ITEM_GRID, height: HEIGHT_ITEM_GRID }}
+        icon={{ width: WIDTH_ITEM_GRID, height: HEIGHT_ITEM_GRID }}
         rowWidth={ROW_WIDTH}
         space={SPACE}
         handleIndexUpdate={handleIndexUpdate}
@@ -36,10 +38,39 @@ function App(props) {
       <DataList
         dataList={EXAMPLE_DATA}
         itemSize={{ width: WIDTH_ITEM_LIST, height: HEIGHT_ITEM_LIST }}
+        icon={IMAGE_SIZE}
         rowWidth={ROW_WIDTH}
         space={SPACE}
         handleIndexUpdate={handleIndexUpdate}
       />
+      {/* <div
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1598113082891-dcb7b2032b28?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60'),
+            url('https://images.unsplash.com/photo-1598147853558-b53f7f671c0b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60'),
+            url('https://images.unsplash.com/photo-1573188100983-5274141e9135?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60')
+            `,
+          backgroundPosition:
+            "left 16px top 16px, left 8px top 8px, left 0px top 0px",
+          backgroundRepeat: "no-repeat,no-repeat,no-repeat",
+          backgroundSize: "65px 55px,65px 55px,65px 55px",
+          width: "81px",
+          height: "71px",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            width: "65px",
+            height: "55px",
+            display: "flex",
+            top: "16px",
+            left: "16px",
+          }}
+        >
+          <span>8</span>
+        </div>
+      </div> */}
     </div>
   );
 }

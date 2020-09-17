@@ -269,3 +269,94 @@ export const isEnterWhiteSpace = ({ x, y, numItemRow, numRow, query }) => {
     y
   );
 };
+
+export const getSubData = ({ idArr, orderList, dataArr }) => {
+  console.log(idArr, orderList);
+  let subData = [];
+  let idxArr = idArr.map((item) => orderList.indexOf(parseInt(item)));
+  console.log("idxArr=", idxArr);
+  for (let i = 0; i < dataArr.length; i++) {
+    if (idxArr.includes(i)) {
+      subData.push(dataArr[i]);
+    }
+  }
+  return subData.length > 10 ? subData.slice(0, 11) : subData;
+};
+
+export const createDragImageStyle = ({ dataArr, width, height }) => {
+  let backgroundImage = "";
+  let backgroundPosition = "";
+  const maxTop = 16;
+  const maxLeft = 16;
+  const top = Math.floor(maxTop / (dataArr.length - 1));
+  const left = Math.floor(maxLeft / (dataArr.length - 1));
+
+  for (let i = 0; i < dataArr.length - 1; i++) {
+    backgroundImage += `url('${dataArr[i].url}'),`;
+    backgroundPosition += `left ${(dataArr.length - 1 - i) * left}px top ${
+      (dataArr.length - 1 - i) * top
+    }px,`;
+  }
+  backgroundImage += `url('${dataArr[dataArr.length - 1].url}')`;
+  backgroundPosition += "left 0px top 0px";
+
+  const style = {
+    backgroundImage,
+    backgroundPosition,
+    backgroundRepeat: "no-repeat,no-repeat,no-repeat",
+    backgroundSize: `${width}px ${height}px,${width}px ${height}px,${width}px ${height}px`,
+    width: `${width + maxLeft}px`,
+    height: `${height + maxTop}px`,
+  };
+
+  return style;
+};
+
+export const createDragImage = ({
+  idArr,
+  orderList,
+  dataArr,
+  width,
+  height,
+}) => {
+  const subData = getSubData({
+    idArr,
+    orderList,
+    dataArr,
+  });
+
+  const imgWrap = document.createElement("div");
+  const textWrap = document.createElement("div");
+  const text = document.createElement("span");
+  text.innerText = idArr.length;
+
+  const style = createDragImageStyle({ dataArr: subData, width, height });
+
+  imgWrap.style.position = "relative";
+  imgWrap.style.width = style.width;
+  imgWrap.style.height = style.height;
+  imgWrap.style.backgroundImage = style.backgroundImage;
+  imgWrap.style.backgroundPosition = style.backgroundPosition;
+  imgWrap.style.backgroundRepeat = style.backgroundRepeat;
+  imgWrap.style.backgroundSize = style.backgroundSize;
+
+  textWrap.style.position = "absolute";
+  textWrap.style.width = `${width}px`;
+  textWrap.style.height = `${height}px`;
+  textWrap.style.display = "flex";
+  textWrap.style.justifyContent = "center";
+  textWrap.style.alignItems = "center";
+  textWrap.style.top = "16px";
+  textWrap.style.left = "16px";
+
+  text.style.width = "20px";
+  text.style.height = "20px";
+  text.style.textAlign = "center";
+  text.style.backgroundColor = "blue";
+  text.style.border = "1px solid white";
+  text.style.borderRadius = "1px";
+
+  textWrap.appendChild(text);
+  imgWrap.appendChild(textWrap);
+  return imgWrap;
+};

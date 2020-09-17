@@ -14,6 +14,7 @@ import "./style.css";
 const ImageGrid = ({
   dataList,
   itemSize,
+  icon,
   rowWidth,
   handleIndexUpdate,
   space,
@@ -122,6 +123,7 @@ const ImageGrid = ({
     parentClass: "list__image__container",
     childClass: "img",
     dataList,
+    icon,
     numItemRow,
     movingUnit,
     displayType: "grid",

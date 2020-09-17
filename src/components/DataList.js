@@ -9,6 +9,7 @@ import "./style.css";
 const DataList = ({
   dataList,
   itemSize,
+  icon,
   rowWidth,
   space,
   handleIndexUpdate,
@@ -61,6 +62,7 @@ const DataList = ({
     parentClass: "list__data__container",
     childClass: "item__wrap",
     dataList,
+    icon,
     movingUnit,
     displayType: "list",
     handleIndexUpdate,
@@ -96,7 +98,7 @@ const DataList = ({
               pointerEvents: "none",
             }}
             alt={item.title}
-            src={item.thumb}
+            src={item.url}
           />
 
           <div className="flex column" style={{ pointerEvents: "none" }}>

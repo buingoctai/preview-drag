@@ -4,12 +4,14 @@ import {
   onRearrangeDataList,
   onMarkingStartPoint,
   getEnterIdx,
+  createDragImage,
 } from "../utils/utils";
 
 const useUpdateOrderList = ({
   parentClass,
   childClass,
   dataList,
+  icon,
   numItemRow = 1,
   displayType,
   handleIndexUpdate,
@@ -93,13 +95,29 @@ const useUpdateOrderList = ({
           [...selectedItemIds.current],
           false
         );
+        setSelectedItemIds([]);
         return;
       }
+
+      // if (!isPressingKey.current) {
+      //   onMarkingStartPoint(
+      //     queryAllItemStr,
+      //     [...selectedItemIds.current],
+      //     false
+      //   );
+      //   setSelectedItemIds([event.target.id]);
+      //   onMarkingStartPoint(
+      //     queryAllItemStr,
+      //     [...selectedItemIds.current],
+      //     false
+      //   );
+      // }
 
       const isMarked = selectedItemIds.current.includes(event.target.id);
       if (isPressingKey.current) {
         onMarkingStartPoint(queryAllItemStr, [event.target.id], !isMarked);
       }
+
       if (isPressingKey.current && isMarked) {
         const newSelectedItemIds = selectedItemIds.current.filter(
           (item) => item !== event.target.id
@@ -174,12 +192,18 @@ const useUpdateOrderList = ({
     onMarkingStartPoint(queryAllItemStr, [id], true);
     event.dataTransfer.dropEffect = "move";
 
-    // var img = new Image(60, 40);
-    // img.src =
-    //   "https://d338t8kmirgyke.cloudfront.net/icons/icon_pngs/000/000/086/original/picture-multiple.png";
-
-    // document.body.appendChild(img);
-    // event.dataTransfer.setDragImage(img, 10, 10);
+    // Select muiti items
+    if (selectedItemIds.current.length > 1) {
+      const imgWrap = createDragImage({
+        idArr: selectedItemIds.current,
+        orderList: orderList.current,
+        dataArr: data,
+        width: icon.width,
+        height: icon.height,
+      });
+      document.body.appendChild(imgWrap);
+      event.dataTransfer.setDragImage(imgWrap, 10, 10);
+    }
   };
 
   const handleDragOverItem = (event) => {
@@ -187,6 +211,7 @@ const useUpdateOrderList = ({
       currentTarget: { id },
     } = event;
     if (id === overItemId.current) return;
+    // if (selectedItemIds.current.includes(id)) return;
     setOverItemId(id);
     setOverSpaceIdx("");
 

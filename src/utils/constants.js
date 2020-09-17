@@ -2,8 +2,8 @@ const ROW_WIDTH = 550;
 const SPACE = 8;
 
 // for grid display
-const WIDTH_ITEM_GRID = 60;
-const HEIGHT_ITEM_GRID = 40;
+const WIDTH_ITEM_GRID = 80;
+const HEIGHT_ITEM_GRID = 50;
 
 // for list display
 const IMAGE_SIZE = { width: 40, height: 50 };
