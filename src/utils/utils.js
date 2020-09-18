@@ -44,7 +44,7 @@ export const onMarkingStartPoint = ({
   itemSize,
 }) => {
   const elms = document.querySelectorAll(query);
-  const opacity = isProcessing ? "0.8" : "1";
+  const opacity = isProcessing ? "0.6" : "1";
 
   for (let i = 0; i < effectedArr.length; i++) {
     elms[effectedArr[i]].style.opacity = opacity;
@@ -378,7 +378,7 @@ export const createDragImage = ({
 
   imgWrap.id = "dargImage";
   imgWrap.style.position = "absolute";
-  //  imgWrap.style.top = "-1000px";
+  imgWrap.style.top = "-1000px";
   imgWrap.style.width = style.width;
   imgWrap.style.height = style.height;
   imgWrap.style.backgroundImage = style.backgroundImage;
