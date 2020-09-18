@@ -212,7 +212,7 @@ const useUpdateOrderList = ({
         fieldName: icon.fieldName,
       });
       document.body.appendChild(imgWrap);
-      event.dataTransfer.setDragImage(imgWrap, 10, 10);
+      event.dataTransfer.setDragImage(imgWrap, icon.width, icon.height);
     }
   };
 

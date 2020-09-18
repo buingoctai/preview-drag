@@ -53,15 +53,17 @@ export const onMarkingStartPoint = ({
     if (isProcessing) {
       const text = document.createElement("span");
       text.className = "numberTxt";
-      text.style.position = "absolute";
-      text.style.color = "white";
-      text.style.pointerEvents = "none";
-      text.style.fontWeight = "bold";
-      text.style.width = `${itemSize.width}px`;
-      text.style.height = `${itemSize.height}px`;
-      text.style.display = "flex";
-      text.style.justifyContent = "center";
-      text.style.alignItems = "center";
+      addStyleObj(text, {
+        position: "absolute",
+        color: "white",
+        pointerEvents: "none",
+        fontWeight: "bold",
+        width: `${itemSize.width}px`,
+        height: `${itemSize.height}px`,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      });
       text.textContent = selectedBeforeArr.length;
 
       elms[effectedArr[i]].appendChild(text);
@@ -192,7 +194,7 @@ const onCreateSpaceCoordinates = (query, displayType) => {
             { x, y },
           ],
           right: [
-            { x, y: y + 40 },
+            { x, y: y + HEIGHT_ITEM_LIST },
             { x: x + WIDTH_ITEM_LIST, y: y + HEIGHT_ITEM_LIST },
 
             { x: x + WIDTH_ITEM_LIST, y: y + HEIGHT_ITEM_LIST + 2 * 10 },
@@ -308,37 +310,40 @@ export const isEnterWhiteSpace = ({ x, y, numItemRow, numRow, query }) => {
 };
 
 export const getSubData = ({ idArr, orderList, dataArr }) => {
-  console.log(idArr, orderList);
   let subData = [];
   let idxArr = idArr.map((item) => orderList.indexOf(parseInt(item)));
-  console.log("idxArr=", idxArr);
+
   for (let i = 0; i < dataArr.length; i++) {
     if (idxArr.includes(i)) {
       subData.push(dataArr[i]);
     }
   }
+
   return subData.length > 3 ? subData.slice(0, 3) : subData;
 };
 
 export const createDragImageStyle = ({ dataArr, width, height, fieldName }) => {
   let backgroundImage = "";
   let backgroundPosition = "";
+  let borderPositionArr = [];
   const maxTop = 16;
   const maxLeft = 16;
-  const top = Math.floor(maxTop / (dataArr.length - 1));
-  const left = Math.floor(maxLeft / (dataArr.length - 1));
+  const topUnit = Math.floor(maxTop / (dataArr.length - 1));
+  const leftUnit = Math.floor(maxLeft / (dataArr.length - 1));
 
   for (let i = 0; i < dataArr.length - 1; i++) {
+    const left = (dataArr.length - 1 - i) * leftUnit;
+    const top = (dataArr.length - 1 - i) * topUnit;
+
     backgroundImage += `url('${dataArr[i][fieldName]}'),`;
-    backgroundPosition += `left ${(dataArr.length - 1 - i) * left}px top ${
-      (dataArr.length - 1 - i) * top
-    }px,`;
+    backgroundPosition += `left ${left}px top ${top}px,`;
+    borderPositionArr.push({ left, top });
   }
-  console.log(fieldName);
+  borderPositionArr.push({ left: 0, top: 0 });
   backgroundImage += `url('${dataArr[dataArr.length - 1][fieldName]}')`;
   backgroundPosition += "left 0px top 0px";
 
-  const style = {
+  const containerStyle = {
     backgroundImage,
     backgroundPosition,
     backgroundRepeat: "no-repeat,no-repeat,no-repeat",
@@ -346,10 +351,12 @@ export const createDragImageStyle = ({ dataArr, width, height, fieldName }) => {
     width: `${width + maxLeft}px`,
     height: `${height + maxTop}px`,
   };
-
-  return style;
+  return { containerStyle, borderPositionArr };
 };
 
+const addStyleObj = (element, style) => {
+  for (const property in style) element.style[property] = style[property];
+};
 export const createDragImage = ({
   idArr,
   orderList,
@@ -363,48 +370,55 @@ export const createDragImage = ({
     orderList,
     dataArr,
   });
-
-  const imgWrap = document.createElement("div");
-  const textWrap = document.createElement("div");
-  const text = document.createElement("span");
-  text.innerText = idArr.length;
-
-  const style = createDragImageStyle({
+  const { containerStyle, borderPositionArr } = createDragImageStyle({
     dataArr: subData,
     width,
     height,
     fieldName,
   });
 
+  // Create dargImage element
+  const imgWrap = document.createElement("div");
   imgWrap.id = "dargImage";
-  imgWrap.style.position = "absolute";
-  imgWrap.style.top = "-1000px";
-  imgWrap.style.width = style.width;
-  imgWrap.style.height = style.height;
-  imgWrap.style.backgroundImage = style.backgroundImage;
-  imgWrap.style.backgroundPosition = style.backgroundPosition;
-  imgWrap.style.backgroundRepeat = style.backgroundRepeat;
-  imgWrap.style.backgroundSize = style.backgroundSize;
+  addStyleObj(imgWrap, {
+    ...containerStyle,
+    position: "absolute",
+    top: "-1000px",
+  });
+  for (let i = 0; i < subData.length; i++) {
+    let textWrap = document.createElement("div");
+    addStyleObj(textWrap, {
+      position: "absolute",
+      width: `${width}px`,
+      height: `${height}px`,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      top: `${borderPositionArr[i].top}px`,
+      left: `${borderPositionArr[i].left}px`,
+      borderTop: "1px solid yellow",
+      borderLeft: "1px solid yellow",
+      borderBottom: "0px",
+      borderRight: "0px",
+      borderStyle: "dotted",
+    });
 
-  textWrap.style.position = "absolute";
-  textWrap.style.width = `${width}px`;
-  textWrap.style.height = `${height}px`;
-  textWrap.style.display = "flex";
-  textWrap.style.justifyContent = "center";
-  textWrap.style.alignItems = "center";
-  textWrap.style.top = "16px";
-  textWrap.style.left = "16px";
-
-  text.style.width = "20px";
-  text.style.height = "20px";
-  text.style.textAlign = "center";
-  text.style.backgroundColor = "blue";
-  text.style.border = "1px solid white";
-  text.style.borderRadius = "1px";
-  text.style.color = "white";
-
-  textWrap.appendChild(text);
-  imgWrap.appendChild(textWrap);
+    if (i === 0) {
+      const text = document.createElement("span");
+      text.innerText = idArr.length;
+      addStyleObj(text, {
+        width: "20px",
+        height: "20px",
+        textAlign: "center",
+        backgroundColor: "blue",
+        border: "1px solid white",
+        borderRadius: "1px",
+        color: "white",
+      });
+      textWrap.appendChild(text);
+    }
+    imgWrap.appendChild(textWrap);
+  }
 
   return imgWrap;
 };

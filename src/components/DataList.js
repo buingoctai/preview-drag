@@ -73,7 +73,7 @@ const DataList = ({
   return (
     <div
       className="list__data__container"
-      style={{ width: rowWidth }}
+      style={{ width: rowWidth + 2 * space }}
       onDragEnter={(event) => {
         if (event.preventDefault) {
           event.preventDefault();
