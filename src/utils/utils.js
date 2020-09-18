@@ -27,10 +27,10 @@ export const updateCss = (query, style) => {
   }
 };
 
-export const onRearrangeDataList = ({ dataArr, srcIdx, targetIdx }) => {
-  const srcItem = dataArr[srcIdx];
-  dataArr.splice(srcIdx, 1);
-  dataArr.splice(targetIdx, 0, srcItem);
+export const onRearrangeDataList = ({ dataArr, startIdx, endIdx }) => {
+  const srcItem = dataArr[startIdx];
+  dataArr.splice(startIdx, 1);
+  dataArr.splice(endIdx, 0, srcItem);
 
   return [...dataArr];
 };

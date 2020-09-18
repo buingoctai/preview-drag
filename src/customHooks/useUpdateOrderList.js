@@ -220,32 +220,35 @@ const useUpdateOrderList = ({
     const {
       currentTarget: { id },
     } = event;
-
     if (id === overItemId.current) return;
+
     setOverItemId(id);
     setOverSpaceIdx("");
+    let enterId = id;
 
-    let newId = id;
     for (let i = 0; i < selectedItemIds.current.length; i++) {
-      onHandleAnimation({
-        start: parseInt(selectedItemIds.current[i]),
-        end: parseInt(newId),
-      });
+      const srcId = selectedItemIds.current[i];
+      const startIdx = orderList.current.indexOf(parseInt(srcId));
+      const endIdx = orderList.current.indexOf(parseInt(enterId));
 
+      onHandleAnimation({
+        startIdx,
+        endIdx,
+      });
       const arrangedOrderList = onRearrangeDataList({
         dataArr: [...orderList.current],
-        srcIdx: orderList.current.indexOf(parseInt(selectedItemIds.current[i])),
-        targetIdx: orderList.current.indexOf(parseInt(newId)),
+        startIdx,
+        endIdx,
       });
       setOrderList(arrangedOrderList);
 
-      newId = selectedItemIds.current[i];
-      const nextIdx = orderList.current.indexOf(
+      // Update enterId
+      enterId = srcId;
+      const nextSrcIdx = orderList.current.indexOf(
         parseInt(selectedItemIds.current[i + 1])
       );
-      const newIdx = orderList.current.indexOf(parseInt(newId));
-
-      if (nextIdx > newIdx) newId = orderList.current[newIdx + 1];
+      const enterIdx = orderList.current.indexOf(parseInt(enterId));
+      if (nextSrcIdx > enterIdx) enterId = orderList.current[enterIdx + 1];
     }
   };
 
@@ -328,10 +331,10 @@ const useUpdateOrderList = ({
     effectElm.dispatchEvent(dragoverEvent);
   };
 
-  const onHandleAnimation = ({ start, end }) => {
+  const onHandleAnimation = ({ startIdx, endIdx }) => {
     const elms = document.querySelectorAll(queryAllItemStr);
-    const startIdx = orderList.current.indexOf(start);
-    const endIdx = orderList.current.indexOf(end);
+    // const startIdx = orderList.current.indexOf(start);
+    // const endIdx = orderList.current.indexOf(end);
 
     performAnimation({ startIdx, endIdx, elms });
   };
