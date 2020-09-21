@@ -396,11 +396,10 @@ export const createDragImage = ({
       alignItems: "center",
       top: `${borderPositionArr[i].top}px`,
       left: `${borderPositionArr[i].left}px`,
-      borderTop: "1px solid yellow",
-      borderLeft: "1px solid yellow",
+      borderTop: "1px solid white",
+      borderLeft: "1px solid white",
       borderBottom: "0px",
       borderRight: "0px",
-      borderStyle: "dotted",
     });
 
     if (i === 0) {
