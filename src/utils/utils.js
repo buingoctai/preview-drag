@@ -4,7 +4,12 @@ import {
   HEIGHT_ITEM_GRID,
   WIDTH_ITEM_LIST,
   HEIGHT_ITEM_LIST,
+  DEFAULT_ICON,
 } from "./constants";
+
+const addStyleObj = (element, style) => {
+  for (const property in style) element.style[property] = style[property];
+};
 
 export const getCurrentTranslate = (element) => {
   const values = element.style.transform.split(/\w+\(|\);?/);
@@ -52,6 +57,7 @@ export const onMarkingStartPoint = ({
     if (onlyOneItem) return;
     if (isProcessing) {
       const text = document.createElement("span");
+
       text.className = "numberTxt";
       addStyleObj(text, {
         position: "absolute",
@@ -65,14 +71,13 @@ export const onMarkingStartPoint = ({
         alignItems: "center",
       });
       text.textContent = selectedBeforeArr.length;
-
       elms[effectedArr[i]].appendChild(text);
     } else {
       const [removedChild] = elms[effectedArr[i]].getElementsByClassName(
         "numberTxt"
       );
-      if (removedChild) elms[effectedArr[i]].removeChild(removedChild);
 
+      if (removedChild) elms[effectedArr[i]].removeChild(removedChild);
       // Update text number order on unselect
       if (effectedArr.length !== selectedBeforeArr.length) {
         for (let i = 0; i < selectedBeforeArr.length; i++) {
@@ -83,7 +88,7 @@ export const onMarkingStartPoint = ({
   }
 };
 
-// Trả về 2 mảng, mỗi mảng chứa index của item có thể bị move cross
+// Remove points can be move on cross direction
 export const detectTwoCrossMovingArr = ({ dataArr, numItemRow }) => {
   let startPoints = [];
   let endPoints = [];
@@ -309,7 +314,7 @@ export const isEnterWhiteSpace = ({ x, y, numItemRow, numRow, query }) => {
   );
 };
 
-export const getSubData = ({ idArr, orderList, dataArr }) => {
+export const getImgUrlArr = ({ idArr, orderList, dataArr }) => {
   let subData = [];
   let idxArr = idArr.map((item) => orderList.indexOf(parseInt(item)));
 
@@ -322,9 +327,16 @@ export const getSubData = ({ idArr, orderList, dataArr }) => {
   return subData.length > 3 ? subData.slice(0, 3) : subData;
 };
 
-export const createDragImageStyle = ({ dataArr, width, height, fieldName }) => {
+export const createDragImageStyle = ({
+  dataArr,
+  width,
+  height,
+  imgField = "url",
+}) => {
   let backgroundImage = "";
   let backgroundPosition = "";
+  let backgroundRepeat = "";
+  let backgroundSize = "";
   let borderPositionArr = [];
   const maxTop = 16;
   const maxLeft = 16;
@@ -335,57 +347,58 @@ export const createDragImageStyle = ({ dataArr, width, height, fieldName }) => {
     const left = (dataArr.length - 1 - i) * leftUnit;
     const top = (dataArr.length - 1 - i) * topUnit;
 
-    backgroundImage += `url('${dataArr[i][fieldName]}'),`;
+    backgroundImage += `url('${dataArr[i][imgField]}'),`;
     backgroundPosition += `left ${left}px top ${top}px,`;
+    backgroundRepeat += "no-repeat,";
+    backgroundSize += `${width}px ${height}px,`;
     borderPositionArr.push({ left, top });
   }
   borderPositionArr.push({ left: 0, top: 0 });
-  backgroundImage += `url('${dataArr[dataArr.length - 1][fieldName]}')`;
+  backgroundImage += `url('${dataArr[dataArr.length - 1][imgField]}')`;
+  backgroundRepeat += "no-repeat";
+  backgroundSize += `${width}px ${height}px`;
   backgroundPosition += "left 0px top 0px";
 
   const containerStyle = {
     backgroundImage,
     backgroundPosition,
-    backgroundRepeat: "no-repeat,no-repeat,no-repeat",
-    backgroundSize: `${width}px ${height}px,${width}px ${height}px,${width}px ${height}px`,
-    width: `${width + maxLeft}px`,
-    height: `${height + maxTop}px`,
+    backgroundRepeat,
+    backgroundSize,
+    width: dataArr.length === 1 ? `${width}px` : `${width + maxLeft}px`,
+    height: dataArr.length === 1 ? `${height}px` : `${height + maxTop}px`,
   };
   return { containerStyle, borderPositionArr };
 };
 
-const addStyleObj = (element, style) => {
-  for (const property in style) element.style[property] = style[property];
-};
-export const createDragImage = ({
-  idArr,
-  orderList,
-  dataArr,
-  width,
-  height,
-  fieldName,
-}) => {
-  const subData = getSubData({
-    idArr,
-    orderList,
-    dataArr,
-  });
+export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
+  const { width, height, imgField } = icon || DEFAULT_ICON;
+  const imgUrlArr = icon
+    ? getImgUrlArr({
+        idArr,
+        orderList,
+        dataArr,
+      })
+    : [
+        {
+          url: DEFAULT_ICON.url,
+        },
+      ];
   const { containerStyle, borderPositionArr } = createDragImageStyle({
-    dataArr: subData,
+    dataArr: imgUrlArr,
     width,
     height,
-    fieldName,
+    imgField,
   });
 
   // Create dargImage element
   const imgWrap = document.createElement("div");
-  imgWrap.id = "dargImage";
+  imgWrap.id = "customDargImage";
   addStyleObj(imgWrap, {
     ...containerStyle,
     position: "absolute",
     top: "-1000px",
   });
-  for (let i = 0; i < subData.length; i++) {
+  for (let i = 0; i < imgUrlArr.length; i++) {
     let textWrap = document.createElement("div");
     addStyleObj(textWrap, {
       position: "absolute",
@@ -402,7 +415,7 @@ export const createDragImage = ({
       borderRight: "0px",
     });
 
-    if (i === 0) {
+    if (i === 0 && idArr.length !== 1) {
       const text = document.createElement("span");
       text.innerText = idArr.length;
       addStyleObj(text, {

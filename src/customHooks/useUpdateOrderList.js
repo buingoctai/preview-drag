@@ -23,7 +23,7 @@ const useUpdateOrderList = ({
   const overItemId = useRef("");
   const isReverting = useRef(true);
   const orderList = useRef(Array.from(Array(dataList.length).keys()));
-  const overSpaceIdx = useRef(""); // Handle drag and drop in whitespaces
+  const overSpaceIdx = useRef("");
 
   const setSrcId = (val) => {
     srcId.current = val;
@@ -179,16 +179,17 @@ const useUpdateOrderList = ({
     } = event;
 
     setSrcId(id);
-    setOverItemId(id);
-    setOverSpaceIdx(""); // Handle drag and drop in whitespace
+    setOverItemId(id); // Handle drag and drop on item
+    setOverSpaceIdx(""); // Handle drag and drop on whitespace
     setIsReverting(true);
     setOrderList(Array.from(Array(dataList.length).keys()));
-    // on Adding Transition
+
     updateCss(queryAllItemStr, {
+      // on Adding Transition
       transition: "all 0.4s ease-out",
     });
 
-    // Them vào selected arr truong hop chi chon mot item
+    // Add into selectedIds for select one item case
     if (selectedItemIds.current.length === 0) {
       setSelectedItemIds([srcId.current]);
       onMarkingStartPoint({
@@ -201,19 +202,15 @@ const useUpdateOrderList = ({
     }
     event.dataTransfer.dropEffect = "move";
 
-    // Select muiti items
-    if (selectedItemIds.current.length > 1) {
-      const imgWrap = createDragImage({
-        idArr: selectedItemIds.current,
-        orderList: orderList.current,
-        dataArr: data,
-        width: icon.width,
-        height: icon.height,
-        fieldName: icon.fieldName,
-      });
-      document.body.appendChild(imgWrap);
-      event.dataTransfer.setDragImage(imgWrap, icon.width, icon.height);
-    }
+    // Custom drag image
+    const imgWrap = createDragImage({
+      idArr: selectedItemIds.current,
+      orderList: orderList.current,
+      dataArr: data,
+      icon,
+    });
+    document.body.appendChild(imgWrap);
+    event.dataTransfer.setDragImage(imgWrap, 10, 10);
   };
 
   const handleDragOverItem = (event) => {
@@ -287,6 +284,8 @@ const useUpdateOrderList = ({
     }
 
     handleIndexUpdate(orderList.current);
+    // Remove drag image
+    document.getElementById("customDargImage").remove();
   };
 
   // Handle drag and drop in whitespaces
@@ -333,8 +332,6 @@ const useUpdateOrderList = ({
 
   const onHandleAnimation = ({ startIdx, endIdx }) => {
     const elms = document.querySelectorAll(queryAllItemStr);
-    // const startIdx = orderList.current.indexOf(start);
-    // const endIdx = orderList.current.indexOf(end);
 
     performAnimation({ startIdx, endIdx, elms });
   };

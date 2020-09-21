@@ -36,7 +36,7 @@ function App(props) {
         icon={{
           width: WIDTH_ITEM_GRID,
           height: HEIGHT_ITEM_GRID,
-          fieldName: "url",
+          imgField: "url",
         }}
         rowWidth={ROW_WIDTH}
         space={SPACE}
@@ -48,7 +48,7 @@ function App(props) {
           width: WIDTH_ITEM_LIST,
           height: HEIGHT_ITEM_LIST,
         }}
-        icon={{ ...IMAGE_SIZE, fieldName: "thumb" }}
+        // icon={{ ...IMAGE_SIZE, imgField: "thumb" }}
         rowWidth={ROW_WIDTH}
         space={SPACE}
         handleIndexUpdate={handleIndexUpdate}
