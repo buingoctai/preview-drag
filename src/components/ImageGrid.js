@@ -18,10 +18,10 @@ const ImageGrid = ({
   space,
 }) => {
   const movingUnit = {
-    width: itemSize.width + 2 * space,
-    height: itemSize.height + 2 * space,
+    width: itemSize.width + space,
+    height: itemSize.height + space,
   };
-  const numItemRow = Math.floor(rowWidth / (itemSize.width + 2 * space));
+  const numItemRow = Math.floor(rowWidth / (itemSize.width + space));
 
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
@@ -146,7 +146,7 @@ const ImageGrid = ({
           style={{
             pointerEvents: "initial",
             transform: "translate3d(0px,0px,0px)",
-            margin: space,
+            margin: Math.floor(space / 2),
             display: "flex",
             justifyContent: "center",
             alignItems: "center",

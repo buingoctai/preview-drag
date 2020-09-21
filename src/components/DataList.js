@@ -14,8 +14,8 @@ const DataList = ({
   handleIndexUpdate,
 }) => {
   const movingUnit = {
-    width: itemSize.width + 2 * space,
-    height: itemSize.height + 2 * space,
+    width: itemSize.width + space,
+    height: itemSize.height + space,
   };
 
   const performAnimation = ({ startIdx, endIdx, elms }) => {
@@ -71,7 +71,7 @@ const DataList = ({
   return (
     <div
       className="list__data__container"
-      style={{ width: rowWidth + 2 * space }}
+      style={{ width: rowWidth + space }}
       onDragEnter={(event) => {
         if (event.preventDefault) {
           event.preventDefault();
@@ -85,7 +85,7 @@ const DataList = ({
           style={{
             background: "lightgray",
             transform: "translate3d(0px,0px,0px)",
-            margin: space,
+            margin: Math.floor(space / 2),
             height: IMAGE_SIZE.height,
             width: itemSize.width,
           }}

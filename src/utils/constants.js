@@ -1,5 +1,5 @@
 const ROW_WIDTH = 550;
-const SPACE = 8;
+const SPACE = 16;
 
 // for grid display
 const WIDTH_ITEM_GRID = 60;
