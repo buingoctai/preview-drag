@@ -2,9 +2,10 @@ import React from "react";
 
 import {
   getCurrentTranslate,
-  updateCss,
+  updateStyleAllElement,
   detectCrossMovingIdxs,
   detectNumDiffRow,
+  updateStyleSpecificElement,
 } from "../utils/utils";
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 import "./style.css";
@@ -23,6 +24,12 @@ const ImageGrid = ({
   };
   const numItemRow = Math.floor(rowWidth / (itemSize.width + space));
 
+  const updateTransform = ({ elm, deltaX, deltaY }) => {
+    const { x, y, z } = getCurrentTranslate(elm);
+    updateStyleSpecificElement(elm, {
+      transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+    });
+  };
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
@@ -57,12 +64,11 @@ const ImageGrid = ({
     }
 
     const elmIndex = orderList.current[startIdx];
-    const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-    elms[elmIndex].style.transition = `all 0s ease-out`;
-    elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
-      y + deltaY
-    }px,${z}px)`;
 
+    updateStyleSpecificElement(elms[elmIndex], {
+      transition: "all 0s ease-out",
+    });
+    updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
     // Moving else points
     deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
     deltaY = 0;
@@ -82,11 +88,7 @@ const ImageGrid = ({
           deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
-
-        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-        elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
-          y + deltaY
-        }px,${z}px)`;
+        updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
       }
     } else {
       for (let i = startIdx - 1; i >= endIdx; i--) {
@@ -102,15 +104,11 @@ const ImageGrid = ({
           deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
-
-        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-        elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
-          y + deltaY
-        }px,${z}px)`;
+        updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
       }
     }
     setTimeout(() => {
-      updateCss(`.${"list__image__container"} .${"img"}`, {
+      updateStyleAllElement(`.${"list__image__container"} .${"img"}`, {
         pointerEvents: "initial",
       });
     }, 400);

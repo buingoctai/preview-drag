@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  updateCss,
+  updateStyleAllElement,
   onRearrangeDataList,
   onMarkingStartPoint,
   getEnterIdx,
@@ -175,7 +175,7 @@ const useUpdateOrderList = ({
     setOverSpaceIdx(""); // Handle drag and drop on whitespace
     setIsReverting(true);
     setOrderList(Array.from(Array(dataList.length).keys()));
-    updateCss(queryAllItemStr, {
+    updateStyleAllElement(queryAllItemStr, {
       // on Adding Transition
       transition: "all 0.4s ease-out",
     });
@@ -252,7 +252,7 @@ const useUpdateOrderList = ({
 
     if (isReverting.current) {
       // on Removing Translate
-      updateCss(queryAllItemStr, {
+      updateStyleAllElement(queryAllItemStr, {
         transform: "translate3d(0px,0px,0px)",
       });
     } else {
@@ -264,11 +264,11 @@ const useUpdateOrderList = ({
         updatedData.push(item);
       }
       // on Removing Transition
-      updateCss(queryAllItemStr, {
+      updateStyleAllElement(queryAllItemStr, {
         transition: "all 0s ease-out",
       });
       // on Removing Translate
-      updateCss(queryAllItemStr, {
+      updateStyleAllElement(queryAllItemStr, {
         transform: "translate3d(0px,0px,0px)",
       });
       setData(updatedData);

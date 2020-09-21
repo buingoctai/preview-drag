@@ -1,6 +1,9 @@
 import React from "react";
 
-import { getCurrentTranslate } from "../utils/utils";
+import {
+  getCurrentTranslate,
+  updateStyleSpecificElement,
+} from "../utils/utils";
 import { IMAGE_SIZE } from "../utils/constants";
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 import "./style.css";
@@ -18,41 +21,38 @@ const DataList = ({
     height: itemSize.height + space,
   };
 
+  const updateTransform = ({ elm, deltaX, deltaY }) => {
+    const { x, y, z } = getCurrentTranslate(elm);
+    updateStyleSpecificElement(elm, {
+      transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+    });
+  };
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
-
     //  Move start point
     deltaX = 0;
     deltaY = (endIdx - startIdx) * movingUnit.height;
-
     const elmIndex = orderList.current[startIdx];
-    const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-    elms[elmIndex].style.transition = `all 0s ease-out`;
-    elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
-      y + deltaY
-    }px,${z}px)`;
+
+    updateStyleSpecificElement(elms[elmIndex], {
+      transition: "all 0s ease-out",
+    });
+    updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
     // Move else points
     deltaX = 0;
     deltaY = startIdx < endIdx ? -movingUnit.height : movingUnit.height;
+
     if (startIdx < endIdx) {
       for (let i = startIdx + 1; i <= endIdx; i++) {
         const elmIndex = orderList.current[i];
-        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-
-        elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
-          y + deltaY
-        }px,${z}px)`;
+        updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
       }
       return;
     }
     for (let i = startIdx - 1; i >= endIdx; i--) {
       const elmIndex = orderList.current[i];
-      const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
-
-      elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
-        y + deltaY
-      }px,${z}px)`;
+      updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
     }
   };
 

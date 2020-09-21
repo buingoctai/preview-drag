@@ -7,7 +7,7 @@ import {
   DEFAULT_ICON,
 } from "./constants";
 
-const addStyleObj = (element, style) => {
+export const updateStyleSpecificElement = (element, style) => {
   for (const property in style) element.style[property] = style[property];
 };
 
@@ -22,7 +22,7 @@ export const getCurrentTranslate = (element) => {
   };
 };
 
-export const updateCss = (query, style) => {
+export const updateStyleAllElement = (query, style) => {
   const elms = document.querySelectorAll(query);
 
   for (let i = 0; i < elms.length; i++) {
@@ -59,7 +59,7 @@ export const onMarkingStartPoint = ({
       const text = document.createElement("span");
 
       text.className = "numberTxt";
-      addStyleObj(text, {
+      updateStyleSpecificElement(text, {
         position: "absolute",
         color: "white",
         pointerEvents: "none",
@@ -389,7 +389,7 @@ export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
   // Create dragImage element
   const imgWrap = document.createElement("div");
   imgWrap.id = "customDragImage";
-  addStyleObj(imgWrap, {
+  updateStyleSpecificElement(imgWrap, {
     ...containerStyle,
     position: "absolute",
     top: "-1000px",
@@ -398,7 +398,7 @@ export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
   for (let i = 0; i < imgUrlArr.length; i++) {
     let textWrap = document.createElement("div");
 
-    addStyleObj(textWrap, {
+    updateStyleSpecificElement(textWrap, {
       position: "absolute",
       width: `${width}px`,
       height: `${height}px`,
@@ -416,7 +416,7 @@ export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
     if (i === 0 && idArr.length !== 1) {
       const text = document.createElement("span");
       text.innerText = idArr.length;
-      addStyleObj(text, {
+      updateStyleSpecificElement(text, {
         width: "20px",
         height: "20px",
         textAlign: "center",
