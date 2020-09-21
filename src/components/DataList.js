@@ -1,9 +1,8 @@
 import React from "react";
+
 import { getCurrentTranslate } from "../utils/utils";
 import { IMAGE_SIZE } from "../utils/constants";
-
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
-
 import "./style.css";
 
 const DataList = ({
@@ -33,7 +32,6 @@ const DataList = ({
     elms[elmIndex].style.transform = `translate3d(${x + deltaX}px,${
       y + deltaY
     }px,${z}px)`;
-
     // Move else points
     deltaX = 0;
     deltaY = startIdx < endIdx ? -movingUnit.height : movingUnit.height;

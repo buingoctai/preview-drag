@@ -99,7 +99,6 @@ export const detectTwoCrossMovingArr = ({ dataArr, numItemRow }) => {
   }
   startPoints.unshift(0);
   endPoints.push(dataArr.length - 1);
-
   return { startPoints, endPoints };
 };
 
@@ -132,7 +131,6 @@ export const detectNumDiffRow = ({ start, end, dataArr, numItemRow }) => {
       belongEndIdx = i;
     }
   }
-
   return Math.abs(belongEndIdx - belongStartIdx);
 };
 
@@ -212,7 +210,6 @@ const onCreateSpaceCoordinates = (query, displayType) => {
     }
     coorDinatesArr.push(coorDinates);
   }
-
   return coorDinatesArr;
 };
 
@@ -323,7 +320,6 @@ export const getImgUrlArr = ({ idArr, orderList, dataArr }) => {
       subData.push(dataArr[i]);
     }
   }
-
   return subData.length > 3 ? subData.slice(0, 3) : subData;
 };
 
@@ -390,16 +386,18 @@ export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
     imgField,
   });
 
-  // Create dargImage element
+  // Create dragImage element
   const imgWrap = document.createElement("div");
-  imgWrap.id = "customDargImage";
+  imgWrap.id = "customDragImage";
   addStyleObj(imgWrap, {
     ...containerStyle,
     position: "absolute",
     top: "-1000px",
   });
+  // Create images and text in dragImage
   for (let i = 0; i < imgUrlArr.length; i++) {
     let textWrap = document.createElement("div");
+
     addStyleObj(textWrap, {
       position: "absolute",
       width: `${width}px`,
@@ -431,6 +429,5 @@ export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
     }
     imgWrap.appendChild(textWrap);
   }
-
   return imgWrap;
 };

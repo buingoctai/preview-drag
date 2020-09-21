@@ -43,7 +43,7 @@ const useUpdateOrderList = ({
     overSpaceIdx.current = val;
   };
 
-  // new feature
+  // User select many items
   const selectedItemIds = useRef([]);
   const setSelectedItemIds = (val) => {
     selectedItemIds.current = val;
@@ -124,23 +124,16 @@ const useUpdateOrderList = ({
   }, [data]);
 
   const handleClickItem = (event) => {
+    // Check marked before
     const isMarked = selectedItemIds.current.includes(event.target.id);
-
-    if (event.target.className !== childClass) {
-      onMarkingStartPoint({
-        query: queryAllItemStr,
-        effectedArr: [...selectedItemIds.current],
-        isProcessing: false,
-        selectedBeforeArr: selectedItemIds,
-      });
-      setSelectedItemIds([]);
-      return;
-    }
-
-    if (
+    // Remove selected items status when click outside item
+    const isOutsideItem = event.target.className !== childClass;
+    // Select many items but don't drag on selected item
+    const cancleDragSelectedItem =
       !isPressingKey.current &&
-      !selectedItemIds.current.includes(event.target.id)
-    ) {
+      !selectedItemIds.current.includes(event.target.id);
+
+    if (isOutsideItem || cancleDragSelectedItem) {
       onMarkingStartPoint({
         query: queryAllItemStr,
         effectedArr: [...selectedItemIds.current],
@@ -160,7 +153,6 @@ const useUpdateOrderList = ({
     if (isPressingKey.current && !isMarked) {
       setSelectedItemIds([...selectedItemIds.current, event.target.id]);
     }
-
     if (isPressingKey.current) {
       onMarkingStartPoint({
         query: queryAllItemStr,
@@ -183,7 +175,6 @@ const useUpdateOrderList = ({
     setOverSpaceIdx(""); // Handle drag and drop on whitespace
     setIsReverting(true);
     setOrderList(Array.from(Array(dataList.length).keys()));
-
     updateCss(queryAllItemStr, {
       // on Adding Transition
       transition: "all 0.4s ease-out",
@@ -217,8 +208,8 @@ const useUpdateOrderList = ({
     const {
       currentTarget: { id },
     } = event;
-    if (id === overItemId.current) return;
 
+    if (id === overItemId.current) return;
     setOverItemId(id);
     setOverSpaceIdx("");
     let enterId = id;
@@ -285,7 +276,7 @@ const useUpdateOrderList = ({
 
     handleIndexUpdate(orderList.current);
     // Remove drag image
-    document.getElementById("customDargImage").remove();
+    document.getElementById("customDragImage").remove();
   };
 
   // Handle drag and drop in whitespaces
@@ -293,13 +284,10 @@ const useUpdateOrderList = ({
     if (event.preventDefault) {
       event.preventDefault();
     }
+    if (event.target.className === childClass) return;
 
     let effectIdx;
     const srcIdx = orderList.current.indexOf(parseInt(srcId.current));
-
-    if (event.target.className === childClass) {
-      return;
-    }
     const detectIdx = getEnterIdx({
       x: event.pageX,
       y: event.pageY,
@@ -332,7 +320,6 @@ const useUpdateOrderList = ({
 
   const onHandleAnimation = ({ startIdx, endIdx }) => {
     const elms = document.querySelectorAll(queryAllItemStr);
-
     performAnimation({ startIdx, endIdx, elms });
   };
   return { data, orderList };

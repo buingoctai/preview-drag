@@ -6,9 +6,7 @@ import {
   detectCrossMovingIdxs,
   detectNumDiffRow,
 } from "../utils/utils";
-
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
-
 import "./style.css";
 
 const ImageGrid = ({
@@ -93,7 +91,6 @@ const ImageGrid = ({
     } else {
       for (let i = startIdx - 1; i >= endIdx; i--) {
         const elmIndex = orderList.current[i];
-
         // Turn off catch events on moving cross
         if (crossMovingIdxs.includes(i)) {
           elms[elmIndex].style.pointerEvents = "none";
