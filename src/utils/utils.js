@@ -26,9 +26,7 @@ export const updateStyleAllElement = (query, style) => {
   const elms = document.querySelectorAll(query);
 
   for (let i = 0; i < elms.length; i++) {
-    Object.keys(style).map((key) => {
-      elms[i].style[key] = style[key];
-    });
+    updateStyleSpecificElement(elms[i], style);
   }
 };
 
