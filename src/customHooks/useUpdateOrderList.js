@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  updateStyleAllElement,
-  updateStyleSpecificElement,
+  updateCss,
   onRearrangeDataList,
   onMarkingStartPoint,
   getEnterIdx,
@@ -94,7 +93,10 @@ const useUpdateOrderList = ({
     };
 
     const onTransitionend = (event) => {
-      updateStyleSpecificElement(event.target, { pointerEvents: "initial" });
+      updateCss({
+        style: { pointerEvents: "initial" },
+        elmArr: [event.target],
+      });
     };
     // Add event listeners
     document.addEventListener("mousedown", onMouseDownItem, false);
@@ -182,9 +184,12 @@ const useUpdateOrderList = ({
     setOverSpaceIdx(""); // Handle drag and drop on whitespace
     setIsReverting(true);
     setOrderList(Array.from(Array(dataList.length).keys()));
-    updateStyleAllElement(queryAllItemStr, {
-      // on Adding Transition
-      transition: "all 0.4s ease-out",
+    updateCss({
+      query: queryAllItemStr,
+      style: {
+        // on Adding Transition
+        transition: "all 0.4s ease-out",
+      },
     });
 
     // Add into selectedIds for select one item case
@@ -255,8 +260,11 @@ const useUpdateOrderList = ({
 
     if (isReverting.current) {
       // on Removing Translate
-      updateStyleAllElement(queryAllItemStr, {
-        transform: "translate3d(0px,0px,0px)",
+      updateCss({
+        query: queryAllItemStr,
+        style: {
+          transform: "translate3d(0px,0px,0px)",
+        },
       });
     } else {
       let updatedData = [];
@@ -266,10 +274,13 @@ const useUpdateOrderList = ({
         const item = data[elementId];
         updatedData.push(item);
       }
-      updateStyleAllElement(queryAllItemStr, {
-        transition: "all 0s ease-out",
-        transform: "translate3d(0px,0px,0px)",
-        pointerEvents: "initial",
+      updateCss({
+        query: queryAllItemStr,
+        style: {
+          transition: "all 0s ease-out",
+          transform: "translate3d(0px,0px,0px)",
+          pointerEvents: "initial",
+        },
       });
       setData(updatedData);
     }

@@ -1,9 +1,6 @@
 import React from "react";
 
-import {
-  getCurrentTranslate,
-  updateStyleSpecificElement,
-} from "../utils/utils";
+import { getCurrentTranslate, updateCss } from "../utils/utils";
 import { IMAGE_SIZE } from "../utils/constants";
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 import "./style.css";
@@ -21,12 +18,6 @@ const DataList = ({
     height: itemSize.height + space,
   };
 
-  const updateTransform = ({ elm, deltaX, deltaY }) => {
-    const { x, y, z } = getCurrentTranslate(elm);
-    updateStyleSpecificElement(elm, {
-      transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
-    });
-  };
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
@@ -34,11 +25,15 @@ const DataList = ({
     deltaX = 0;
     deltaY = (endIdx - startIdx) * movingUnit.height;
     const elmIndex = orderList.current[startIdx];
+    const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
-    updateStyleSpecificElement(elms[elmIndex], {
-      transition: "all 0s ease-out",
+    updateCss({
+      style: {
+        transition: "all 0s ease-out",
+        transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+      },
+      elmArr: [elms[elmIndex]],
     });
-    updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
     // Move else points
     deltaX = 0;
     deltaY = startIdx < endIdx ? -movingUnit.height : movingUnit.height;
@@ -46,13 +41,27 @@ const DataList = ({
     if (startIdx < endIdx) {
       for (let i = startIdx + 1; i <= endIdx; i++) {
         const elmIndex = orderList.current[i];
-        updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
+        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
+
+        updateCss({
+          style: {
+            transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+          },
+          elmArr: [elms[elmIndex]],
+        });
       }
       return;
     }
     for (let i = startIdx - 1; i >= endIdx; i--) {
       const elmIndex = orderList.current[i];
-      updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
+      const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
+
+      updateCss({
+        style: {
+          transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+        },
+        elmArr: [elms[elmIndex]],
+      });
     }
   };
 

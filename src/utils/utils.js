@@ -7,10 +7,6 @@ import {
   DEFAULT_ICON,
 } from "./constants";
 
-export const updateStyleSpecificElement = (element, style) => {
-  for (const property in style) element.style[property] = style[property];
-};
-
 export const getCurrentTranslate = (element) => {
   const values = element.style.transform.split(/\w+\(|\);?/);
   const transform = values[1].split(/,\s?/g).map((numStr) => parseInt(numStr));
@@ -22,11 +18,11 @@ export const getCurrentTranslate = (element) => {
   };
 };
 
-export const updateStyleAllElement = (query, style) => {
-  const elms = document.querySelectorAll(query);
+export const updateCss = ({ query, style, elmArr }) => {
+  const elms = query ? document.querySelectorAll(query) : elmArr;
 
   for (let i = 0; i < elms.length; i++) {
-    updateStyleSpecificElement(elms[i], style);
+    for (const property in style) elms[i].style[property] = style[property];
   }
 };
 
@@ -57,16 +53,19 @@ export const onMarkingStartPoint = ({
       const text = document.createElement("span");
 
       text.className = "numberTxt";
-      updateStyleSpecificElement(text, {
-        position: "absolute",
-        color: "white",
-        pointerEvents: "none",
-        fontWeight: "bold",
-        width: `${itemSize.width}px`,
-        height: `${itemSize.height}px`,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+      updateCss({
+        style: {
+          position: "absolute",
+          color: "white",
+          pointerEvents: "none",
+          fontWeight: "bold",
+          width: `${itemSize.width}px`,
+          height: `${itemSize.height}px`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        elmArr: [text],
       });
       text.textContent = selectedBeforeArr.length;
       elms[effectedArr[i]].appendChild(text);
@@ -387,41 +386,50 @@ export const createDragImage = ({ idArr, orderList, dataArr, icon }) => {
   // Create dragImage element
   const imgWrap = document.createElement("div");
   imgWrap.id = "customDragImage";
-  updateStyleSpecificElement(imgWrap, {
-    ...containerStyle,
-    position: "absolute",
-    top: "-1000px",
+  updateCss({
+    style: {
+      ...containerStyle,
+      position: "absolute",
+      top: "-1000px",
+    },
+    elmArr: [imgWrap],
   });
   // Create images and text in dragImage
   for (let i = 0; i < imgUrlArr.length; i++) {
     let textWrap = document.createElement("div");
 
-    updateStyleSpecificElement(textWrap, {
-      position: "absolute",
-      width: `${width}px`,
-      height: `${height}px`,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      top: `${borderPositionArr[i].top}px`,
-      left: `${borderPositionArr[i].left}px`,
-      borderTop: "1px solid white",
-      borderLeft: "1px solid white",
-      borderBottom: "0px",
-      borderRight: "0px",
+    updateCss({
+      style: {
+        position: "absolute",
+        width: `${width}px`,
+        height: `${height}px`,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        top: `${borderPositionArr[i].top}px`,
+        left: `${borderPositionArr[i].left}px`,
+        borderTop: "1px solid white",
+        borderLeft: "1px solid white",
+        borderBottom: "0px",
+        borderRight: "0px",
+      },
+      elmArr: [textWrap],
     });
 
     if (i === 0 && idArr.length !== 1) {
       const text = document.createElement("span");
       text.innerText = idArr.length;
-      updateStyleSpecificElement(text, {
-        width: "20px",
-        height: "20px",
-        textAlign: "center",
-        backgroundColor: "blue",
-        border: "1px solid white",
-        borderRadius: "1px",
-        color: "white",
+      updateCss({
+        style: {
+          width: "20px",
+          height: "20px",
+          textAlign: "center",
+          backgroundColor: "blue",
+          border: "1px solid white",
+          borderRadius: "1px",
+          color: "white",
+        },
+        elmArr: [text],
       });
       textWrap.appendChild(text);
     }

@@ -4,7 +4,7 @@ import {
   getCurrentTranslate,
   detectCrossMovingIdxs,
   detectNumDiffRow,
-  updateStyleSpecificElement,
+  updateCss,
 } from "../utils/utils";
 import useUpdateOrderList from "../customHooks/useUpdateOrderList";
 import "./style.css";
@@ -23,12 +23,6 @@ const ImageGrid = ({
   };
   const numItemRow = Math.floor(rowWidth / (itemSize.width + space));
 
-  const updateTransform = ({ elm, deltaX, deltaY }) => {
-    const { x, y, z } = getCurrentTranslate(elm);
-    updateStyleSpecificElement(elm, {
-      transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
-    });
-  };
   const performAnimation = ({ startIdx, endIdx, elms }) => {
     let deltaX = 0;
     let deltaY = 0;
@@ -61,16 +55,22 @@ const ImageGrid = ({
       }
     }
     const elmIndex = orderList.current[startIdx];
-    updateStyleSpecificElement(elms[elmIndex], {
-      transition: "all 0s ease-out",
+    const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
+    updateCss({
+      style: {
+        transition: "all 0s ease-out",
+        transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+      },
+      elmArr: [elms[elmIndex]],
     });
-    updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
+
     // Moving else points
     deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
     deltaY = 0;
     if (startIdx < endIdx) {
       for (let i = startIdx + 1; i <= endIdx; i++) {
         const elmIndex = orderList.current[i];
+        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
 
         // Turn off catch events on moving cross
         if (crossMovingIdxs.includes(i)) {
@@ -83,11 +83,18 @@ const ImageGrid = ({
           deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
-        updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
+        updateCss({
+          style: {
+            transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+          },
+          elmArr: [elms[elmIndex]],
+        });
       }
     } else {
       for (let i = startIdx - 1; i >= endIdx; i--) {
         const elmIndex = orderList.current[i];
+        const { x, y, z } = getCurrentTranslate(elms[elmIndex]);
+
         // Turn off catch events on moving cross
         if (crossMovingIdxs.includes(i)) {
           elms[elmIndex].style.pointerEvents = "none";
@@ -99,7 +106,12 @@ const ImageGrid = ({
           deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
           deltaY = 0;
         }
-        updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
+        updateCss({
+          style: {
+            transform: `translate3d(${x + deltaX}px,${y + deltaY}px,${z}px)`,
+          },
+          elmArr: [elms[elmIndex]],
+        });
       }
     }
   };
