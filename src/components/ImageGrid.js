@@ -2,7 +2,6 @@ import React from "react";
 
 import {
   getCurrentTranslate,
-  updateStyleAllElement,
   detectCrossMovingIdxs,
   detectNumDiffRow,
   updateStyleSpecificElement,
@@ -47,7 +46,6 @@ const ImageGrid = ({
       numItemRow,
     });
     const isSameRow = numRowDiff === 0 ? true : false;
-
     // Moving start point
     if (isSameRow) {
       deltaX = (endIdx - startIdx) * movingUnit.width;
@@ -62,9 +60,7 @@ const ImageGrid = ({
         deltaY = numRowDiff * -movingUnit.height;
       }
     }
-
     const elmIndex = orderList.current[startIdx];
-
     updateStyleSpecificElement(elms[elmIndex], {
       transition: "all 0s ease-out",
     });
@@ -72,7 +68,6 @@ const ImageGrid = ({
     // Moving else points
     deltaX = startIdx < endIdx ? -movingUnit.width : movingUnit.width;
     deltaY = 0;
-
     if (startIdx < endIdx) {
       for (let i = startIdx + 1; i <= endIdx; i++) {
         const elmIndex = orderList.current[i];
@@ -107,11 +102,6 @@ const ImageGrid = ({
         updateTransform({ elm: elms[elmIndex], deltaX, deltaY });
       }
     }
-    setTimeout(() => {
-      updateStyleAllElement(`.${"list__image__container"} .${"img"}`, {
-        pointerEvents: "initial",
-      });
-    }, 400);
   };
 
   const { data, orderList } = useUpdateOrderList({

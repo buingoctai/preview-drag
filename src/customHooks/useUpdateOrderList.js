@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   updateStyleAllElement,
+  updateStyleSpecificElement,
   onRearrangeDataList,
   onMarkingStartPoint,
   getEnterIdx,
@@ -59,15 +60,18 @@ const useUpdateOrderList = ({
       handleDragStartItem(event);
     };
 
-    const onDragOverItem = (event) => {
-      handleDragOverItem(event);
-    };
-
     const onDragEndItem = (event) => {
       handleDragEndItem(event);
     };
 
     const onDragOverContainer = (event) => {
+      if (event.preventDefault) {
+        event.preventDefault();
+      }
+      if (event.target.classList.contains(childClass)) {
+        handleDragOverItem(event);
+        return;
+      }
       handleDragOverContainer(event);
     };
 
@@ -79,6 +83,7 @@ const useUpdateOrderList = ({
       const { keyCode } = event;
       if (keyCode === 17) setIsPressingKey(true);
     };
+
     const onKeyUp = (event) => {
       const { keyCode } = event;
       if (keyCode === 17) setIsPressingKey(false);
@@ -88,6 +93,9 @@ const useUpdateOrderList = ({
       handleClickItem(event);
     };
 
+    const onTransitionend = (event) => {
+      updateStyleSpecificElement(event.target, { pointerEvents: "initial" });
+    };
     // Add event listeners
     document.addEventListener("mousedown", onMouseDownItem, false);
     document.addEventListener("keydown", onKeyDown, false);
@@ -96,11 +104,11 @@ const useUpdateOrderList = ({
     const container = document.querySelector(`.${parentClass}`);
     container.addEventListener("dragover", onDragOverContainer, false);
     container.addEventListener("drop", onDropContainer, false);
+    container.addEventListener("transitionend", onTransitionend, false);
 
     const items = document.querySelectorAll(queryAllItemStr);
     items.forEach((e) => {
       e.addEventListener("dragstart", onDragStartItem, false);
-      e.addEventListener("dragover", onDragOverItem, false);
       e.addEventListener("dragend", onDragEndItem, false);
     });
 
@@ -113,25 +121,24 @@ const useUpdateOrderList = ({
       const container = document.querySelector(`.${parentClass}`);
       container.removeEventListener("dragover", onDragOverContainer, false);
       container.removeEventListener("drop", onDropContainer, false);
+      container.removeEventListener("transitionend", onTransitionend, false);
 
       const items = document.querySelectorAll(queryAllItemStr);
       items.forEach((e) => {
         e.removeEventListener("dragstart", onDragStartItem, false);
-        e.removeEventListener("dragover", onDragOverItem, false);
         e.removeEventListener("dragend", onDragEndItem, false);
       });
     };
   }, [data]);
 
-  const handleClickItem = (event) => {
+  const handleClickItem = ({ target: element }) => {
     // Check marked before
-    const isMarked = selectedItemIds.current.includes(event.target.id);
+    const isMarked = selectedItemIds.current.includes(element.id);
     // Remove selected items status when click outside item
-    const isOutsideItem = event.target.className !== childClass;
+    const isOutsideItem = !element.classList.contains(childClass);
     // Select many items but don't drag on selected item
     const cancleDragSelectedItem =
-      !isPressingKey.current &&
-      !selectedItemIds.current.includes(event.target.id);
+      !isPressingKey.current && !selectedItemIds.current.includes(element.id);
 
     if (isOutsideItem || cancleDragSelectedItem) {
       onMarkingStartPoint({
@@ -146,17 +153,17 @@ const useUpdateOrderList = ({
 
     if (isPressingKey.current && isMarked) {
       const newSelectedItemIds = selectedItemIds.current.filter(
-        (item) => item !== event.target.id
+        (item) => item !== element.id
       );
       setSelectedItemIds([...newSelectedItemIds]);
     }
     if (isPressingKey.current && !isMarked) {
-      setSelectedItemIds([...selectedItemIds.current, event.target.id]);
+      setSelectedItemIds([...selectedItemIds.current, element.id]);
     }
     if (isPressingKey.current) {
       onMarkingStartPoint({
         query: queryAllItemStr,
-        effectedArr: [event.target.id],
+        effectedArr: [element.id],
         isProcessing: !isMarked,
         selectedBeforeArr: selectedItemIds.current,
         itemSize,
@@ -204,11 +211,7 @@ const useUpdateOrderList = ({
     event.dataTransfer.setDragImage(imgWrap, 10, 10);
   };
 
-  const handleDragOverItem = (event) => {
-    const {
-      currentTarget: { id },
-    } = event;
-
+  const handleDragOverItem = ({ target: { id } }) => {
     if (id === overItemId.current) return;
     setOverItemId(id);
     setOverSpaceIdx("");
@@ -271,6 +274,10 @@ const useUpdateOrderList = ({
       updateStyleAllElement(queryAllItemStr, {
         transform: "translate3d(0px,0px,0px)",
       });
+      // Enable pointer events
+      updateStyleAllElement(queryAllItemStr, {
+        pointerEvents: "initial",
+      });
       setData(updatedData);
     }
 
@@ -279,13 +286,7 @@ const useUpdateOrderList = ({
     document.getElementById("customDragImage").remove();
   };
 
-  // Handle drag and drop in whitespaces
   const handleDragOverContainer = (event) => {
-    if (event.preventDefault) {
-      event.preventDefault();
-    }
-    if (event.target.className === childClass) return;
-
     let effectIdx;
     const srcIdx = orderList.current.indexOf(parseInt(srcId.current));
     const detectIdx = getEnterIdx({
@@ -308,20 +309,18 @@ const useUpdateOrderList = ({
     if (detectIdx < srcIdx) {
       effectIdx = detectIdx + 1;
     }
-
     setOverSpaceIdx(effectIdx);
     setOverItemId(srcId.current);
-    const dragoverEvent = new Event("dragover");
-    const effectElm = document.querySelectorAll(queryAllItemStr)[
-      orderList.current[effectIdx]
-    ];
-    effectElm.dispatchEvent(dragoverEvent);
+    handleDragOverItem({
+      target: { id: orderList.current[effectIdx].toString() },
+    });
   };
 
   const onHandleAnimation = ({ startIdx, endIdx }) => {
     const elms = document.querySelectorAll(queryAllItemStr);
     performAnimation({ startIdx, endIdx, elms });
   };
+
   return { data, orderList };
 };
 
