@@ -28,7 +28,7 @@ const useUpdateOrderList = ({
   const setSrcId = (val) => {
     srcId.current = val;
   };
-  const setOverItemId = (val) => {
+  const setEnterItemId = (val) => {
     overItemId.current = val;
   };
   const setIsReverting = (val) => {
@@ -39,14 +39,14 @@ const useUpdateOrderList = ({
   };
 
   // Handle drag and drop in whitespaces
-  const setOverSpaceIdx = (val) => {
+  const setEnterSpaceIdx = (val) => {
     overSpaceIdx.current = val;
   };
 
   // User select many items
-  const selectedItemIds = useRef([]);
-  const setSelectedItemIds = (val) => {
-    selectedItemIds.current = val;
+  const selectedIds = useRef([]);
+  const setSelectedIds = (val) => {
+    selectedIds.current = val;
   };
   const isPressingKey = useRef(false);
   const setIsPressingKey = (val) => {
@@ -135,39 +135,39 @@ const useUpdateOrderList = ({
 
   const handleClickItem = ({ target: element }) => {
     // Check marked before
-    const isMarked = selectedItemIds.current.includes(element.id);
+    const isMarked = selectedIds.current.includes(element.id);
     // Remove selected items status when click outside item
     const isOutsideItem = !element.classList.contains(childClass);
     // Select many items but don't drag on selected item
     const cancleDragSelectedItem =
-      !isPressingKey.current && !selectedItemIds.current.includes(element.id);
+      !isPressingKey.current && !selectedIds.current.includes(element.id);
 
     if (isOutsideItem || cancleDragSelectedItem) {
       onMarkingStartPoint({
         query: queryAllItemStr,
-        effectedArr: [...selectedItemIds.current],
+        effectedArr: [...selectedIds.current],
         isProcessing: false,
-        selectedBeforeArr: selectedItemIds.current,
+        selectedBeforeIds: selectedIds.current,
       });
-      setSelectedItemIds([]);
+      setSelectedIds([]);
       return;
     }
 
     if (isPressingKey.current && isMarked) {
-      const newSelectedItemIds = selectedItemIds.current.filter(
+      const newselectedIds = selectedIds.current.filter(
         (item) => item !== element.id
       );
-      setSelectedItemIds([...newSelectedItemIds]);
+      setSelectedIds([...newselectedIds]);
     }
     if (isPressingKey.current && !isMarked) {
-      setSelectedItemIds([...selectedItemIds.current, element.id]);
+      setSelectedIds([...selectedIds.current, element.id]);
     }
     if (isPressingKey.current) {
       onMarkingStartPoint({
         query: queryAllItemStr,
         effectedArr: [element.id],
         isProcessing: !isMarked,
-        selectedBeforeArr: selectedItemIds.current,
+        selectedBeforeIds: selectedIds.current,
         itemSize,
       });
     }
@@ -180,8 +180,8 @@ const useUpdateOrderList = ({
     } = event;
 
     setSrcId(id);
-    setOverItemId(id); // Handle drag and drop on item
-    setOverSpaceIdx(""); // Handle drag and drop on whitespace
+    setEnterItemId(id); // Handle drag and drop on item
+    setEnterSpaceIdx(""); // Handle drag and drop on whitespace
     setIsReverting(true);
     setOrderList(Array.from(Array(dataList.length).keys()));
     updateCss({
@@ -193,13 +193,13 @@ const useUpdateOrderList = ({
     });
 
     // Add into selectedIds for select one item case
-    if (selectedItemIds.current.length === 0) {
-      setSelectedItemIds([srcId.current]);
+    if (selectedIds.current.length === 0) {
+      setSelectedIds([srcId.current]);
       onMarkingStartPoint({
         query: queryAllItemStr,
         effectedArr: [id],
         isProcessing: true,
-        selectedBeforeArr: selectedItemIds.current,
+        selectedBeforeIds: selectedIds.current,
         onlyOneItem: true,
       });
     }
@@ -207,7 +207,7 @@ const useUpdateOrderList = ({
 
     // Custom drag image
     const imgWrap = createDragImage({
-      idArr: selectedItemIds.current,
+      idArr: selectedIds.current,
       orderList: orderList.current,
       dataArr: data,
       icon,
@@ -218,12 +218,12 @@ const useUpdateOrderList = ({
 
   const handleDragOverItem = ({ target: { id } }) => {
     if (id === overItemId.current) return;
-    setOverItemId(id);
-    setOverSpaceIdx("");
+    setEnterItemId(id);
+    setEnterSpaceIdx("");
     let enterId = id;
 
-    for (let i = 0; i < selectedItemIds.current.length; i++) {
-      const srcId = selectedItemIds.current[i];
+    for (let i = 0; i < selectedIds.current.length; i++) {
+      const srcId = selectedIds.current[i];
       const startIdx = orderList.current.indexOf(parseInt(srcId));
       const endIdx = orderList.current.indexOf(parseInt(enterId));
 
@@ -241,7 +241,7 @@ const useUpdateOrderList = ({
       // Update enterId
       enterId = srcId;
       const nextSrcIdx = orderList.current.indexOf(
-        parseInt(selectedItemIds.current[i + 1])
+        parseInt(selectedIds.current[i + 1])
       );
       const enterIdx = orderList.current.indexOf(parseInt(enterId));
       if (nextSrcIdx > enterIdx) enterId = orderList.current[enterIdx + 1];
@@ -252,11 +252,11 @@ const useUpdateOrderList = ({
     event.stopImmediatePropagation();
     onMarkingStartPoint({
       query: queryAllItemStr,
-      effectedArr: [...selectedItemIds.current],
+      effectedArr: [...selectedIds.current],
       isProcessing: false,
-      selectedBeforeArr: selectedItemIds.current,
+      selectedBeforeIds: selectedIds.current,
     });
-    setSelectedItemIds([]);
+    setSelectedIds([]);
 
     if (isReverting.current) {
       // on Removing Translate
@@ -313,8 +313,8 @@ const useUpdateOrderList = ({
     if (detectIdx < srcIdx) {
       effectIdx = detectIdx + 1;
     }
-    setOverSpaceIdx(effectIdx);
-    setOverItemId(srcId.current);
+    setEnterSpaceIdx(effectIdx);
+    setEnterItemId(srcId.current);
     handleDragOverItem({
       target: { id: orderList.current[effectIdx].toString() },
     });

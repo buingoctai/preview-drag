@@ -38,7 +38,7 @@ export const onMarkingStartPoint = ({
   query,
   effectedArr,
   isProcessing,
-  selectedBeforeArr,
+  selectedBeforeIds,
   onlyOneItem = false,
   itemSize,
 }) => {
@@ -67,7 +67,7 @@ export const onMarkingStartPoint = ({
         },
         elmArr: [text],
       });
-      text.textContent = selectedBeforeArr.length;
+      text.textContent = selectedBeforeIds.length;
       elms[effectedArr[i]].appendChild(text);
     } else {
       const [removedChild] = elms[effectedArr[i]].getElementsByClassName(
@@ -76,9 +76,9 @@ export const onMarkingStartPoint = ({
 
       if (removedChild) elms[effectedArr[i]].removeChild(removedChild);
       // Update text number order on unselect
-      if (effectedArr.length !== selectedBeforeArr.length) {
-        for (let i = 0; i < selectedBeforeArr.length; i++) {
-          elms[selectedBeforeArr[i]].lastElementChild.textContent = i + 1;
+      if (effectedArr.length !== selectedBeforeIds.length) {
+        for (let i = 0; i < selectedBeforeIds.length; i++) {
+          elms[selectedBeforeIds[i]].lastElementChild.textContent = i + 1;
         }
       }
     }
