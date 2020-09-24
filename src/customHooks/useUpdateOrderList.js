@@ -266,16 +266,9 @@ const useUpdateOrderList = ({
         const item = data[elementId];
         updatedData.push(item);
       }
-      // on Removing Transition
       updateStyleAllElement(queryAllItemStr, {
         transition: "all 0s ease-out",
-      });
-      // on Removing Translate
-      updateStyleAllElement(queryAllItemStr, {
         transform: "translate3d(0px,0px,0px)",
-      });
-      // Enable pointer events
-      updateStyleAllElement(queryAllItemStr, {
         pointerEvents: "initial",
       });
       setData(updatedData);
